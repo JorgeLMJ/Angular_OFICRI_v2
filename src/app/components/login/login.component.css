@@ -1,0 +1,67 @@
+/* Animaciones suaves */
+.form-control,
+.btn {
+  transition: all 0.3s ease;
+}
+
+/* Estilo inputs con focus mejorado */
+.form-control:focus {
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  border-color: #007bff;
+}
+
+/* Botón con hover animado */
+.btn-primary {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  border: none;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #0056b3, #004085);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Card con sombra suave */
+.card {
+  border: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Placeholder más claro */
+.form-control::placeholder {
+  color: #aaa;
+}
+
+/* Alerta de error con ícono */
+.alert-danger {
+  border: none;
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* Input group con bordes redondeados */
+.input-group .form-control {
+  border-radius: 0.375rem !important;
+}
+
+.input-group .input-group-text {
+  background: #f8f9fa;
+  border-radius: 0.375rem 0 0 0.375rem !important;
+}
+
+/* Responsive: en móvil, imagen desaparece y login ocupa todo */
+@media (max-width: 768px) {
+  .col-md-6:last-child {
+    display: none;
+  }
+
+  .card {
+    max-width: 90% !important;
+    margin: 0 auto;
+  }
+}

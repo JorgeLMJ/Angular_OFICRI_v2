@@ -1,0 +1,103 @@
+<div class="container">
+  <h2>
+    <i class="bi bi-bar-chart-line fs-4 me-2"></i> Reportes Estadísticos
+  </h2>
+
+  <!-- Tarjetas de resumen -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card text-center shadow-sm">
+        <div class="card-body">
+          <h6 class="card-title text-muted">Total Empleados</h6>
+          <p class="card-text display-6">{{ totalEmpleados }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center shadow-sm">
+        <div class="card-body">
+          <h6 class="card-title text-muted">Total Documentos</h6>
+          <p class="card-text display-6">{{ totalDocumentos }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Gráfico 1: Análisis por sustancia -->
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-header">
+          <i class="bi bi-beaker fs-6 me-1"></i> Análisis por Sustancia
+        </div>
+        <div class="card-body">
+          <canvas baseChart 
+                  [data]="barChartConfig.data"
+                  [options]="barChartConfig.options"
+                  type="bar">
+          </canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ✅ NUEVO: Gráfico de Rangos Cualitativos -->
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-header">
+          <i class="bi bi-graph-up fs-6 me-1"></i> Resultado Cualitativo (Rangos)
+        </div>
+        <div class="card-body">
+          <canvas baseChart 
+                  [data]="rangoChartConfig.data"
+                  [options]="rangoChartConfig.options"
+                  type="bar">
+          </canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-4">
+    <!-- Gráfico 3: Documentos por día -->
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-header">
+          <i class="bi bi-calendar-check fs-6 me-1"></i> Documentos por Día (Últimos 7 días)
+        </div>
+        <div class="card-body">
+          <canvas baseChart 
+                  [data]="lineChartConfig.data"
+                  [options]="lineChartConfig.options"
+                  type="line">
+          </canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gráfico 4: Productividad por empleado -->
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-header">
+          <i class="bi bi-people fs-6 me-1"></i> Productividad por Empleado
+        </div>
+        <div class="card-body">
+          <canvas baseChart 
+                  [data]="horizontalBarChartConfig.data"
+                  [options]="horizontalBarChartConfig.options"
+                  type="bar">
+          </canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botones de exportación -->
+  <div class="mt-4 text-center">
+    <button class="btn btn-primary me-2" (click)="descargarExcel()">
+      <i class="bi bi-file-earmark-excel me-1"></i> Descargar Excel
+    </button>
+    <button class="btn btn-danger" (click)="descargarPDF()">
+      <i class="bi bi-file-earmark-pdf me-1"></i> Descargar PDF
+    </button>
+  </div>
+</div>

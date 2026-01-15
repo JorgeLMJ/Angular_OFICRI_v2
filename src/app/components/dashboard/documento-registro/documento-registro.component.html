@@ -1,0 +1,163 @@
+<div class="mb-4 p-3 bg-light border rounded">
+  <h5 class="text-primary mb-3"><i class="bi bi-cloud-upload me-2"></i>📤 Subir Oficio</h5>
+  <div class="d-flex align-items-center">
+    <input type="file" class="form-control" accept=".pdf,.png,.jpg,.jpeg" (change)="onFileSelected($event)" #fileInput>
+    <button type="button" class="btn btn-outline-primary" (click)="fileInput.click()">
+      <i class="bi bi-magic me-1"></i> Extraccion de datos
+    </button>
+  </div>
+  <small class="text-muted">Sube un PDF, PNG o JPG del oficio. La IA extraerá los datos automáticamente.</small>
+</div>
+<div class="container mt-4">
+  <div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0">
+        <i class="bi bi-file-earmark-plus-fill me-2"></i>
+        {{ documentoForm.get('id')?.value ? 'Editar Documento' : 'Registrar Documento' }}
+      </h4>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="documentoForm" (ngSubmit)="onSubmit()" novalidate>
+        
+        <div class="mb-4 p-3 bg-light rounded">
+          <h5 class="text-primary mb-4"><i class="bi bi-file-earmark me-2"></i>📄 Oficio
+          
+          </h5>
+    <div class="row mb-3">
+  <div class="col-md-3" *ngIf="false">
+    <label class="form-label">Nombre Documento</label>
+    <input 
+      type="text" 
+      class="form-control" 
+      formControlName="nombreDocumento" 
+      placeholder="Ej: INFORME PERICIAL DE DOSAJE ETILICO"
+      required>
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">N° Registro</label>
+    <input 
+      type="number" 
+      class="form-control" 
+      formControlName="nro_registro" 
+      placeholder="Ingrese el n° de registro"
+      required>
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">N° Oficio</label>
+    <input 
+      type="number" 
+      class="form-control" 
+      formControlName="nroOficio" 
+      placeholder="Ingrese número" 
+      required>
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">Fecha de Oficio</label>
+    <input 
+      type="date" 
+      class="form-control" 
+      formControlName="fechaIngreso" 
+      required>
+  </div>
+</div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Nombre Oficio</label>
+              <textarea 
+                class="form-control" 
+                formControlName="nombreOficio" 
+                placeholder="Ej: INFORME PERICIAL"
+                rows="3"
+                required
+              ></textarea>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Asunto</label>
+              <textarea 
+                class="form-control" 
+                formControlName="asunto" 
+                placeholder="Asunto del documento"
+                rows="3"
+                required
+              ></textarea>
+            </div>
+          </div>
+          
+          <div class="row mb-3">
+            <div class="col-md-3"><label class="form-label">Nombres</label><input type="text" class="form-control" formControlName="nombres" required></div>
+            <div class="col-md-3"><label class="form-label">Apellidos</label><input type="text" class="form-control" formControlName="apellidos" required></div>
+            <div class="col-md-3"><label class="form-label">Edad</label><input type="number" class="form-control" formControlName="edad" required></div>
+            <div class="col-md-3"><label class="form-label">DNI o CE</label><input type="text" class="form-control" formControlName="dni" required></div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6"><label class="form-label">Situación</label><input type="text" class="form-control" formControlName="situacion" required></div>
+            <div class="col-md-6"><label class="form-label">Delito/Infracción</label><input type="text" class="form-control" formControlName="delitoInfraccion" required></div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6"><label class="form-label">Fecha y hora del Incidente</label><input type="datetime-local" class="form-control" formControlName="fechaHoraIncidente" required></div>
+            <div class="col-md-6"><label class="form-label">Procedencia</label><input type="text" class="form-control" formControlName="procedencia" required></div>
+          </div>
+        </div>
+
+        <div class="mb-4 p-3 bg-light rounded">
+          <h5 class="text-primary mb-4"><i class="bi bi-droplet me-2"></i>🧪 Acta de Toma de Muestra</h5>
+          <div class="row mb-3">
+            <div class="col-md-4"><label class="form-label">Fecha Acta</label><input type="date" class="form-control" formControlName="fechaActa"></div>
+            <div class="col-md-4"><label class="form-label">Hora Toma de Muestra</label><input type="time" class="form-control" formControlName="horaTomaMuestra"></div>
+            <div class="col-md-4">
+              <label class="form-label">Tipo de Muestra</label>
+              <div class="btn-group w-100">
+                <button type="button" class="btn btn-sm btn-outline-primary" [class.active]="documentoForm.get('tipoMuestra')?.value === 'Orina'" (click)="documentoForm.patchValue({ tipoMuestra: 'Orina' })">Orina</button>
+                <button type="button" class="btn btn-sm btn-outline-primary" [class.active]="documentoForm.get('tipoMuestra')?.value === 'Sangre'" (click)="documentoForm.patchValue({ tipoMuestra: 'Sangre' })">Sangre</button>
+                <button type="button" class="btn btn-sm btn-outline-primary" [class.active]="documentoForm.get('tipoMuestra')?.value === 'Humor Vitreo'" (click)="documentoForm.patchValue({ tipoMuestra: 'Humor Vitreo' })">Humor Vítreo</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6"><label class="form-label">Persona que Conduce</label><input type="text" class="form-control" formControlName="personaQueConduce"></div>
+            <div class="col-md-6">
+              <label class="form-label">Cualitativo</label>
+              <div class="btn-group w-100">
+                  <button type="button" class="btn btn-sm btn-outline-success" [class.active]="documentoForm.get('cualitativo')?.value === 'POSITIVO'" (click)="documentoForm.patchValue({ cualitativo: 'POSITIVO' })">POSITIVO</button>
+                  <button type="button" class="btn btn-sm btn-outline-danger" [class.active]="documentoForm.get('cualitativo')?.value === 'NEGATIVO'" (click)="documentoForm.patchValue({ cualitativo: 'NEGATIVO' })">NEGATIVO</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary" [class.active]="documentoForm.get('cualitativo')?.value === 'INDETERMINADO'" (click)="documentoForm.patchValue({ cualitativo: 'INDETERMINADO' })">INDETERMINADO</button>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+
+        <div class="mb-4 p-3 bg-light rounded">
+          <h5 class="text-primary mb-4"><i class="bi bi-paperclip me-2"></i>📎 Anexos</h5>
+          <div formGroupName="anexos" class="row">
+            <div class="col-md-6">
+              <div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="cadenaCustodia" formControlName="cadenaCustodia"><label class="form-check-label" for="cadenaCustodia">Formato de cadena de custodia.</label></div>
+              <div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="rotulo" formControlName="rotulo"><label class="form-check-label" for="rotulo">Rotulo</label></div>
+              <div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="actaTomaMuestra" formControlName="actaTomaMuestra"><label class="form-check-label" for="actaTomaMuestra">Acta de toma de muestra</label></div>
+              <div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="actaConsentimiento" formControlName="actaConsentimiento"><label class="form-check-label" for="actaConsentimiento">Acta de consentimiento</label></div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="actaDenunciaVerbal" formControlName="actaDenunciaVerbal"><label class="form-check-label" for="actaDenunciaVerbal">Acta de denuncia verbal</label></div>
+              <div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="actaIntervencionPolicial" formControlName="actaIntervencionPolicial"><label class="form-check-label" for="actaIntervencionPolicial">Acta de intervención policial</label></div>
+              <div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="copiaDniSidpol" formControlName="copiaDniSidpol"><label class="form-check-label" for="copiaDniSidpol">Copia de DNI, SIDPOL</label></div>
+              <div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="actaObtencionMuestra" formControlName="actaObtencionMuestra"><label class="form-check-label" for="actaObtencionMuestra">Acta de obtencion de muestra de sangre</label></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end">
+          <button type="button" class="btn btn-secondary me-2" (click)="cancelar()">
+            <i class="bi bi-x-circle me-1"></i> Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="documentoForm.invalid">
+            <i class="bi bi-save me-1"></i>
+            {{ documentoForm.get('id')?.value ? 'Actualizar' : 'Guardar' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

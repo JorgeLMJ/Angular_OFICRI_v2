@@ -1,0 +1,290 @@
+<!-- src/app/components/dashboard/asignacion-toxicologia-registro/asignacion-toxicologia-registro.component.html -->
+
+<div class="container mt-4">
+  <div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0">
+        <i class="bi bi-beaker me-2"></i>
+        {{ editMode ? 'Editar' : 'Registrar' }} Asignación de Toxicología
+      </h4>
+    </div>
+
+    <div class="card-body">
+      <form [formGroup]="asignacionForm" (ngSubmit)="onSubmit()" novalidate>
+
+        <!-- 🔹 Fila 1: Área y Documento -->
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Área</label>
+            <input type="text"
+                   class="form-control"
+                   formControlName="area"
+                   [readonly]="true">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Documento</label>
+            <div class="input-group">
+              <input type="text"
+                     class="form-control"
+                     [value]="documentoSeleccionadoInfo"
+                     placeholder="Seleccione un documento"
+                     readonly>
+              <button type="button"
+                      class="btn btn-outline-primary"
+                      (click)="openDocumentoModal()"
+                      [disabled]="!puedeSeleccionarEntidades()">
+                <i class="bi bi-file-earmark-text me-1"></i> Seleccionar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 🔹 Fila 2: Empleado -->
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Químico Farmacéutico</label>
+            <div class="input-group">
+              <input type="text"
+                     class="form-control"
+                     [value]="empleadoSeleccionadoNombre"
+                     placeholder="Seleccione un empleado"
+                     readonly>
+              <button type="button"
+                      class="btn btn-outline-primary"
+                      (click)="openEmpleadoModal()"
+                      [disabled]="!puedeSeleccionarEntidades()">
+                <i class="bi bi-person me-1"></i> Seleccionar
+              </button>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Estado *</label>
+            <div class="btn-group w-100" role="group">
+                <input type="radio" class="btn-check" formControlName="estado" value="EN_PROCESO" id="estado-proceso">
+                <label class="btn btn-outline-warning" for="estado-proceso"><i class="bi bi-hourglass-split me-1"></i> En Proceso</label>
+
+                <input type="radio" class="btn-check" formControlName="estado" value="COMPLETADO" id="estado-completado">
+                <label class="btn btn-outline-success" for="estado-completado"><i class="bi bi-check-circle-fill me-1"></i> Completado</label>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 🔹 Sección de Resultados Cualitativos -->
+<div class="p-3 mb-4 bg-light border rounded" formGroupName="resultados">
+  <h5 class="text-primary mb-3"><i class="bi bi-clipboard2-check-fill me-2"></i>Resultados Cualitativos</h5>
+  <div class="row">
+    <div class="col-md-4">
+      <div class="mb-3">
+        <label class="form-label fw-bold">Marihuana</label>
+        <div class="btn-group w-100" role="group">
+          <input type="checkbox" class="btn-check" id="mar-pos" [checked]="asignacionForm.get('resultados.marihuana')?.value === 'Positivo'" (change)="toggleResultado('marihuana', 'Positivo')" />
+          <label class="btn btn-outline-primary" for="mar-pos">Positivo</label>
+          <input type="checkbox" class="btn-check" id="mar-neg" [checked]="asignacionForm.get('resultados.marihuana')?.value === 'Negativo'" (change)="toggleResultado('marihuana', 'Negativo')" />
+          <label class="btn btn-outline-secondary" for="mar-neg">Negativo</label>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="mb-3">
+        <label class="form-label fw-bold">Cocaína</label>
+        <div class="btn-group w-100" role="group">
+          <input type="checkbox" class="btn-check" id="coc-pos" [checked]="asignacionForm.get('resultados.cocaina')?.value === 'Positivo'" (change)="toggleResultado('cocaina', 'Positivo')" />
+          <label class="btn btn-outline-primary" for="coc-pos">Positivo</label>
+          <input type="checkbox" class="btn-check" id="coc-neg" [checked]="asignacionForm.get('resultados.cocaina')?.value === 'Negativo'" (change)="toggleResultado('cocaina', 'Negativo')" />
+          <label class="btn btn-outline-secondary" for="coc-neg">Negativo</label>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="mb-3">
+        <label class="form-label fw-bold">Benzodiacepinas</label>
+        <div class="btn-group w-100" role="group">
+          <input type="checkbox" class="btn-check" id="ben-pos" [checked]="asignacionForm.get('resultados.benzodiacepinas')?.value === 'Positivo'" (change)="toggleResultado('benzodiacepinas', 'Positivo')" />
+          <label class="btn btn-outline-primary" for="ben-pos">Positivo</label>
+          <input type="checkbox" class="btn-check" id="ben-neg" [checked]="asignacionForm.get('resultados.benzodiacepinas')?.value === 'Negativo'" (change)="toggleResultado('benzodiacepinas', 'Negativo')" />
+          <label class="btn btn-outline-secondary" for="ben-neg">Negativo</label>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="mb-3">
+        <label class="form-label fw-bold">Barbitúricos</label>
+        <div class="btn-group w-100" role="group">
+          <input type="checkbox" class="btn-check" id="bar-pos" [checked]="asignacionForm.get('resultados.barbituricos')?.value === 'Positivo'" (change)="toggleResultado('barbituricos', 'Positivo')" />
+          <label class="btn btn-outline-primary" for="bar-pos">Positivo</label>
+          <input type="checkbox" class="btn-check" id="bar-neg" [checked]="asignacionForm.get('resultados.barbituricos')?.value === 'Negativo'" (change)="toggleResultado('barbituricos', 'Negativo')" />
+          <label class="btn btn-outline-secondary" for="bar-neg">Negativo</label>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="mb-3">
+        <label class="form-label fw-bold">Carbamatos</label>
+        <div class="btn-group w-100" role="group">
+          <input type="checkbox" class="btn-check" id="car-pos" [checked]="asignacionForm.get('resultados.carbamatos')?.value === 'Positivo'" (change)="toggleResultado('carbamatos', 'Positivo')" />
+          <label class="btn btn-outline-primary" for="car-pos">Positivo</label>
+          <input type="checkbox" class="btn-check" id="car-neg" [checked]="asignacionForm.get('resultados.carbamatos')?.value === 'Negativo'" (change)="toggleResultado('carbamatos', 'Negativo')" />
+          <label class="btn btn-outline-secondary" for="car-neg">Negativo</label>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="mb-3">
+        <label class="form-label fw-bold">Estricnina</label>
+        <div class="btn-group w-100" role="group">
+          <input type="checkbox" class="btn-check" id="est-pos" [checked]="asignacionForm.get('resultados.estricnina')?.value === 'Positivo'" (change)="toggleResultado('estricnina', 'Positivo')" />
+          <label class="btn btn-outline-primary" for="est-pos">Positivo</label>
+          <input type="checkbox" class="btn-check" id="est-neg" [checked]="asignacionForm.get('resultados.estricnina')?.value === 'Negativo'" (change)="toggleResultado('estricnina', 'Negativo')" />
+          <label class="btn btn-outline-secondary" for="est-neg">Negativo</label>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="mb-3">
+        <label class="form-label fw-bold">Cumarinas</label>
+        <div class="btn-group w-100" role="group">
+          <input type="checkbox" class="btn-check" id="cum-pos" [checked]="asignacionForm.get('resultados.cumarinas')?.value === 'Positivo'" (change)="toggleResultado('cumarinas', 'Positivo')" />
+          <label class="btn btn-outline-primary" for="cum-pos">Positivo</label>
+          <input type="checkbox" class="btn-check" id="cum-neg" [checked]="asignacionForm.get('resultados.cumarinas')?.value === 'Negativo'" (change)="toggleResultado('cumarinas', 'Negativo')" />
+          <label class="btn btn-outline-secondary" for="cum-neg">Negativo</label>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="mb-3">
+        <label class="form-label fw-bold">Organofosforados</label>
+        <div class="btn-group w-100" role="group">
+          <input type="checkbox" class="btn-check" id="org-pos" [checked]="asignacionForm.get('resultados.organofosforados')?.value === 'Positivo'" (change)="toggleResultado('organofosforados', 'Positivo')" />
+          <label class="btn btn-outline-primary" for="org-pos">Positivo</label>
+          <input type="checkbox" class="btn-check" id="org-neg" [checked]="asignacionForm.get('resultados.organofosforados')?.value === 'Negativo'" (change)="toggleResultado('organofosforados', 'Negativo')" />
+          <label class="btn btn-outline-secondary" for="org-neg">Negativo</label>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="mb-3">
+        <label class="form-label fw-bold">Misoprostol</label>
+        <div class="btn-group w-100" role="group">
+          <input type="checkbox" class="btn-check" id="mis-pos" [checked]="asignacionForm.get('resultados.misoprostol')?.value === 'Positivo'" (change)="toggleResultado('misoprostol', 'Positivo')" />
+          <label class="btn btn-outline-primary" for="mis-pos">Positivo</label>
+          <input type="checkbox" class="btn-check" id="mis-neg" [checked]="asignacionForm.get('resultados.misoprostol')?.value === 'Negativo'" (change)="toggleResultado('misoprostol', 'Negativo')" />
+          <label class="btn btn-outline-secondary" for="mis-neg">Negativo</label>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="mb-3">
+        <label class="form-label fw-bold">Piretrinas</label>
+        <div class="btn-group w-100" role="group">
+          <input type="checkbox" class="btn-check" id="pir-pos" [checked]="asignacionForm.get('resultados.piretrinas')?.value === 'Positivo'" (change)="toggleResultado('piretrinas', 'Positivo')" />
+          <label class="btn btn-outline-primary" for="pir-pos">Positivo</label>
+          <input type="checkbox" class="btn-check" id="pir-neg" [checked]="asignacionForm.get('resultados.piretrinas')?.value === 'Negativo'" (change)="toggleResultado('piretrinas', 'Negativo')" />
+          <label class="btn btn-outline-secondary" for="pir-neg">Negativo</label>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+        <!-- 🔹 Botones -->
+        <div class="d-flex justify-content-end">
+          <button type="button" class="btn btn-secondary me-2" (click)="cancelar()">
+            <i class="bi bi-x-circle me-1"></i> Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="asignacionForm.invalid">
+            <i class="bi bi-save me-1"></i>
+            {{ editMode ? 'Actualizar' : 'Guardar' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modales de Selección -->
+<div class="modal fade" #documentoModal tabindex="-1" aria-labelledby="documentoModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="documentoModalLabel">Seleccionar Documento</h5>
+        <button type="button" class="btn-close" (click)="closeDocumentoModal()"></button>
+      </div>
+      <div class="modal-body">
+        <!-- ✂️ ELIMINADO: checkbox "Mostrar Asignados" -->
+        <input type="text" class="form-control mb-3" placeholder="Buscar por n° oficio o involucrado..." [(ngModel)]="terminoBusquedaDocumento" (input)="filtrarDocumentos()" [ngModelOptions]="{standalone: true}">
+
+        <table class="table table-hover align-middle">
+          <thead>
+            <tr>
+              <th>ID</th><th>Nombre Documento</th><th>N° Oficio</th><th>Involucrado</th><th>Estado</th><th>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let doc of paginatedDocumentos">
+              <td>{{ doc.id }}</td>
+              <td>{{ doc.nombreDocumento }}</td>
+              <td>{{ doc.nroOficio }}</td>
+              <td>{{ doc.nombres }} {{ doc.apellidos }}</td>
+              <td>
+                <span *ngIf="isDocumentoAsignado(doc.id!)" class="badge bg-warning text-dark">Asignado</span>
+                <span *ngIf="!isDocumentoAsignado(doc.id!)" class="badge bg-success">Disponible</span>
+              </td>
+              <td>
+                <!-- ✅ Permitir seleccionar SOLO disponibles -->
+                <button *ngIf="!isDocumentoAsignado(doc.id!)" type="button" class="btn btn-sm btn-outline-primary" (click)="seleccionarDocumento(doc)">
+                  Seleccionar
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <!-- 📄 Paginación -->
+        <nav>
+          <ul class="pagination justify-content-center">
+            <li class="page-item" [class.disabled]="currentPageDocumentos === 1">
+              <button class="page-link" (click)="goToPageDocumentos(currentPageDocumentos - 1)">Anterior</button>
+            </li>
+            <li class="page-item" [class.active]="currentPageDocumentos === i" *ngFor="let i of getPageNumbers()">
+              <button class="page-link" (click)="goToPageDocumentos(i)">{{ i }}</button>
+            </li>
+            <li class="page-item" [class.disabled]="currentPageDocumentos === totalPagesDocumentos">
+              <button class="page-link" (click)="goToPageDocumentos(currentPageDocumentos + 1)">Siguiente</button>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" #empleadoModal tabindex="-1" aria-labelledby="empleadoModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="empleadoModalLabel">Seleccionar</h5>
+        <button type="button" class="btn-close" (click)="closeEmpleadoModal()"></button>
+      </div>
+      <div class="modal-body">
+         <input type="text" class="form-control mb-3" placeholder="Buscar..." [(ngModel)]="terminoBusquedaEmpleado" (input)="filtrarEmpleados()" [ngModelOptions]="{standalone: true}">
+        <table class="table table-hover align-middle">
+          <thead>
+            <tr>
+              <th>Nombre</th><th>Cargo</th><th>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let emp of empleadosFiltrados">
+              <td>{{ emp.nombre }} {{ emp.apellido }}</td>
+              <td>{{ emp.cargo }}</td>
+              <td>
+                <button type="button" class="btn btn-sm btn-outline-primary" (click)="seleccionarEmpleado(emp)">
+                  Seleccionar
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

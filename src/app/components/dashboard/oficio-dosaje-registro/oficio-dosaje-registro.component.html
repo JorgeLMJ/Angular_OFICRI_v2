@@ -1,0 +1,218 @@
+<!-- src/app/components/dashboard/oficio-dosaje-registro/oficio-dosaje-registro.component.html -->
+
+<div class="container mt-4">
+  <div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0">
+        <i class="bi bi-file-earmark-plus me-2"></i>
+        {{ oficioForm.get('id')?.value ? 'Editar Oficio Dosaje' : 'Registrar Oficio Dosaje' }}
+      </h4>
+    </div>
+
+    <div class="card-body">
+      <form [formGroup]="oficioForm" (ngSubmit)="onSubmit()" novalidate>
+
+        <!-- 🔹 Fila 1: Nombre del Oficio y Dirigido -->
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Nro del Oficio</label>
+            <input type="text" 
+                   class="form-control" 
+                   formControlName="nombreOficio" 
+                   placeholder="Ej: INFORME DE DOSAJE"
+                   required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Dirigido a</label>
+            <textarea
+              class="form-control"
+              formControlName="dirigido"
+              rows="3"
+              maxlength="300"
+              required
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- 🔹 Fila 2: Referencia y Número de Informe -->
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Referencia</label>
+            <input type="text" 
+                   class="form-control" 
+                   formControlName="referencia" 
+                   placeholder="Caso, expediente, etc."
+                   required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Número de Informe</label>
+            <input type="text" 
+                   class="form-control" 
+                   formControlName="nroInforme" 
+                   placeholder="Ej: INF-2025-001"
+                   required>
+          </div>
+        </div>
+
+        <!-- 🔹 Fila 3: Tipo de Muestra y Nombre Completo -->
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Tipo de Muestra</label>
+            <select class="form-select" formControlName="tipoMuestra" required>
+              <option value="">Seleccionar...</option>
+              <option value="Orina">Orina</option>
+              <option value="Sangre">Sangre</option>
+              <option value="Humor Vitreo">Humor Vitreo</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Nombre Completo</label>
+            <input type="text" 
+                   class="form-control" 
+                   formControlName="nombreCompleto" 
+                   placeholder="Nombre y apellido del involucrado"
+                   required>
+          </div>
+        </div>
+
+        <!-- 🔹 Fila 4: Auxiliar y Documento -->
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Auxiliar (Iniciales)</label>
+            <input type="text" 
+                   class="form-control" 
+                   formControlName="auxiliar" 
+                   placeholder="Nombre del auxiliar"
+                   required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Documento</label>
+            <div class="input-group">
+              <input type="text"
+                     class="form-control"
+                     [value]="documentoSeleccionadoOficio"
+                     placeholder="Seleccione un documento"
+                     readonly>
+              <button type="button"
+                      class="btn btn-outline-primary"
+                      data-bs-toggle="modal"
+                      data-bs-target="#documentoModal"
+                      [disabled]="!puedeSeleccionarEntidades()">
+                <i class="bi bi-file-earmark-text me-1"></i> Seleccionar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 🔹 Botones -->
+        <div class="d-flex justify-content-end">
+          <button type="button" class="btn btn-secondary me-2" (click)="cancelar()">
+            <i class="bi bi-x-circle me-1"></i> Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="oficioForm.invalid">
+            <i class="bi bi-save me-1"></i>
+            {{ oficioForm.get('id')?.value ? 'Actualizar' : 'Guardar' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 🌟 Modal para seleccionar documento -->
+<div class="modal fade" id="documentoModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">Seleccionar Documento</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <input type="text"
+                 class="form-control"
+                 placeholder="Buscar por n° oficio, procedencia o nombre..."
+                 [(ngModel)]="terminoBusqueda"
+                 (input)="filtrarDocumentos()">
+        </div>
+        <table class="table table-hover align-middle">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>N° Registro</th>
+              <th>Nombre Documento</th>
+              <th>N° Oficio</th>
+              <th>Nombre Oficio</th>
+              <th>Procedencia</th>
+              <th>Involucrado</th>
+              <th>Estado</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let doc of paginatedDocumentos">
+              <td>{{ doc.id }}</td>
+              <td>{{ doc.nro_registro }}</td>
+              <td>{{ doc.nombreDocumento }}</td>
+              <td>{{ doc.nroOficio }}</td>
+              <td>{{ doc.nombreOficio }}</td>
+              <td>{{ doc.procedencia }}</td>
+              <td>{{ doc.nombres }} {{ doc.apellidos }}</td>
+              <td>
+                <span *ngIf="isDocumentoAsignado(doc.id!)" class="badge bg-warning text-dark">
+                  Asignado
+                </span>
+                <span *ngIf="!isDocumentoAsignado(doc.id!)" class="badge bg-success">
+                  Disponible
+                </span>
+              </td>
+              <td>
+                <button *ngIf="!isDocumentoAsignado(doc.id!) && puedeSeleccionarEntidades()"
+                        type="button"
+                        class="btn btn-sm btn-outline-primary"
+                        (click)="seleccionarDocumento(doc)"
+                        data-bs-dismiss="modal">
+                  <i class="bi bi-file-earmark-text me-1"></i> Seleccionar
+                </button>
+                <span *ngIf="isDocumentoAsignado(doc.id!) || !puedeSeleccionarEntidades()" class="text-muted small">
+                  {{ !puedeSeleccionarEntidades() ? 'Solo lectura' : 'No disponible' }}
+                </span>
+              </td>
+            </tr>
+            <tr *ngIf="paginatedDocumentos.length === 0">
+              <td colspan="9" class="text-center text-muted">No se encontraron documentos</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- ✅ Paginación del modal -->
+        <nav *ngIf="totalPagesModal > 1" class="mt-3">
+          <ul class="pagination justify-content-center">
+            <li class="page-item" [class.disabled]="currentPageModal === 1">
+              <button class="page-link" (click)="prevPageModal()">Anterior</button>
+            </li>
+            <li
+              class="page-item"
+              *ngFor="let page of getPageNumbersModal()"
+              [class.active]="page === currentPageModal"
+            >
+              <button class="page-link" (click)="goToPageModal(page)">{{ page }}</button>
+            </li>
+            <li class="page-item" [class.disabled]="currentPageModal === totalPagesModal">
+              <button class="page-link" (click)="nextPageModal()">Siguiente</button>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .btn:disabled,
+  .form-control[readonly] {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: #f8f9fa;
+  }
+</style>

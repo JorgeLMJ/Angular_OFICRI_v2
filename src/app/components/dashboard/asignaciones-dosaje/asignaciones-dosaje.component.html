@@ -1,0 +1,106 @@
+<!-- src/app/components/dashboard/asignaciones-dosaje/asignaciones-dosaje.component.html -->
+
+<div class="container mt-4">
+  <!-- Encabezado -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="text-primary">
+      <i class="bi bi-journal-text me-2"></i> Gestión de Asignaciones Dosaje
+    </h2>
+    <button 
+          *ngIf="!esQuimicoFarmaceutico" 
+          class="btn btn-success" 
+          (click)="nuevaAsignacion()">
+          <i class="bi bi-plus-circle me-2"></i> Nueva Asignación Dosaje
+        </button>
+  </div>
+
+  <!-- 🔎 Buscador -->
+  <div class="mb-4">
+    <div class="input-group">
+      <span class="input-group-text bg-primary text-white">
+        <i class="bi bi-search"></i>
+      </span>
+      <input type="text" class="form-control" placeholder="Buscar por área, estado o resultado..."
+             [(ngModel)]="searchTerm" (input)="applyFilter()">
+    </div>
+  </div>
+
+  <!-- 📋 Grid de cards -->
+  <div class="row g-4">
+    <div class="col-12 col-md-6 col-lg-4" *ngFor="let asignacion of paginatedAsignaciones">
+      <div class="card shadow-sm h-100 border-0">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+          <div>
+            <h5 class="mb-0 text-primary">Dosaje #{{ asignacion.id }}</h5>
+            <small class="text-muted">
+              Doc: {{ asignacion.documentoId }} | 
+              Emp: {{
+                empleadosMap.has(asignacion.empleadoId!)
+                  ? empleadosMap.get(asignacion.empleadoId!)!.nombre + ' ' + empleadosMap.get(asignacion.empleadoId!)!.apellido
+                  : asignacion.empleadoId
+              }}
+            </small>
+          </div>
+          <div class="btn-group" role="group">
+            <button type="button" class="btn btn-sm btn-outline-primary" (click)="editarAsignacion(asignacion.id!)">
+              <i class="bi bi-pencil-square"></i>
+            </button>
+            <!-- ✅ Botón de vista previa: ahora pasa toda la asignación -->
+            <button type="button" class="btn btn-sm btn-outline-info" (click)="vistaPreviaAsignacion(asignacion)">
+              <i class="bi bi-eye"></i>
+            </button>
+           
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <h6 class="text-secondary">Área</h6>
+            <p class="mb-0">{{ asignacion.area }}</p>
+          </div>
+          <div class="mb-3">
+            <h6 class="text-secondary">Resultado Cualitativo</h6>
+            <p class="mb-0">{{ asignacion.cualitativo ? asignacion.cualitativo : 'Sin resultado' }}</p>
+          </div>
+          <div class="mb-3">
+            <h6 class="text-secondary">Estado</h6>
+            <span class="badge" [ngClass]="{
+              'bg-warning': asignacion.estado === 'EN_PROCESO',
+              'bg-success': asignacion.estado === 'COMPLETADO',
+              'bg-secondary': !asignacion.estado
+            }">
+              {{ asignacion.estado || 'Sin estado' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🚫 Sin resultados -->
+  <div class="text-center py-5" *ngIf="asignacionesFiltradas.length === 0">
+    <i class="bi bi-search display-4 text-muted mb-3"></i>
+    <h5 class="text-muted">No se encontraron asignaciones</h5>
+    <p class="text-muted">Intenta con otros términos de búsqueda</p>
+  </div>
+
+  <!-- 📄 Paginación -->
+  <div class="d-flex justify-content-center mt-4" *ngIf="asignacionesFiltradas.length > 0">
+    <nav>
+      <ul class="pagination">
+        <li class="page-item" [class.disabled]="currentPage === 1">
+          <button class="page-link" (click)="prevPage()">Anterior</button>
+        </li>
+        
+        <li class="page-item" 
+            *ngFor="let page of getPageNumbers(); trackBy: trackByPage"
+            [class.active]="page === currentPage">
+          <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
+        </li>
+        
+        <li class="page-item" [class.disabled]="currentPage === totalPages">
+          <button class="page-link" (click)="nextPage()">Siguiente</button>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</div>

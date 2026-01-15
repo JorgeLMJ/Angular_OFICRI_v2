@@ -1,0 +1,115 @@
+<div class="container mt-4">
+  <!-- Encabezado -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="text-primary">👥 Gestión de Usuarios</h2>
+    <div>
+      <button class="btn btn-success me-2" (click)="nuevoUsuario()">
+        <i class="bi bi-person-plus me-2"></i> Nuevo Usuario
+      </button>
+    </div>
+  </div>
+
+  <!-- 🔎 Buscador -->
+  <div class="mb-3">
+    <input type="text" class="form-control" placeholder="Buscar usuario por nombre, email o rol..."
+           [(ngModel)]="terminoBusqueda" (input)="filtrarUsuarios()">
+  </div>
+
+  <!-- Tabla de usuarios -->
+  <div class="table-responsive shadow-sm rounded">
+    <table class="table table-hover align-middle">
+      <thead class="table-primary">
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Rol</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let usuario of usuariosPaginados">
+          <td>{{ usuario.id }}</td>
+          <td>{{ usuario.nombre }}</td>
+          <td>{{ usuario.email }}</td>
+          <td>{{ usuario.rol }}</td>
+          <td>
+            <button class="btn btn-sm btn-warning me-2" (click)="editarUsuario(usuario)">
+              <i class="bi bi-pencil-square"></i>
+            </button>
+            <button class="btn btn-sm btn-danger" (click)="eliminarUsuario(usuario.id!)">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="usuariosFiltrados.length === 0">
+          <td colspan="5" class="text-center text-muted">No se encontraron resultados</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 📄 Paginación -->
+  <div class="d-flex justify-content-between align-items-center mt-3">
+    <button class="btn btn-outline-primary btn-sm" (click)="paginaAnterior()" [disabled]="paginaActual === 1">
+      ⬅ Anterior
+    </button>
+
+    <span>Página {{ paginaActual }} de {{ totalPaginas }}</span>
+
+    <button class="btn btn-outline-primary btn-sm" (click)="paginaSiguiente()" [disabled]="paginaActual === totalPaginas">
+      Siguiente ➡
+    </button>
+  </div>
+
+  <!-- Modal para agregar/editar usuario -->
+  <div class="modal fade" id="usuarioModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content shadow">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">
+            {{ usuarioSeleccionado?.id ? '✏️ Editar Usuario' : '➕ Nuevo Usuario' }}
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="usuarioForm" (ngSubmit)="guardarUsuario()">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Nombre</label>
+                <input type="text" class="form-control" formControlName="nombre" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control" formControlName="email" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Contraseña</label>
+                <input type="password" class="form-control" formControlName="password"
+                       [required]="!usuarioSeleccionado">
+                <small *ngIf="usuarioSeleccionado" class="text-muted">
+                  (Dejar vacío si no deseas cambiarla)
+                </small>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Rol</label>
+                <select class="form-select" formControlName="rol" required>
+                  <option value="Administrador">Administrador</option>
+                  <option value="Auxiliar de Toxicologia">Auxiliar de Toxicologia</option>
+                  <option value="Auxiliar de Dosaje">Auxiliar de Dosaje</option>
+                  <option value="Quimico Farmaceutico">Quimico Farmaceutico</option>
+                </select>
+              </div>
+            </div>
+            <div class="modal-footer mt-3">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button type="submit" class="btn btn-primary" [disabled]="usuarioForm.invalid">
+                {{ usuarioSeleccionado?.id ? 'Actualizar' : 'Guardar' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

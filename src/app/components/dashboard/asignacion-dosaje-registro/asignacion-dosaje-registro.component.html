@@ -1,0 +1,250 @@
+<!-- src/app/components/dashboard/asignacion-dosaje-registro/asignacion-dosaje-registro.component.html -->
+
+<div class="container mt-4">
+  <div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0">
+        <i class="bi bi-journal-plus me-2"></i>
+        {{ asignacionForm.get('id')?.value ? 'Editar Asignación Dosaje' : 'Registrar Asignación Dosaje' }}
+      </h4>
+    </div>
+
+    <div class="card-body">
+      <form [formGroup]="asignacionForm" (ngSubmit)="onSubmit()" novalidate>
+
+        <!-- 🔹 Fila 1: Área y Documento -->
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Área</label>
+            <input type="text" 
+                   class="form-control" 
+                   formControlName="area" 
+                   [readonly]="true">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Documento</label>
+            <div class="input-group">
+              <input type="text"
+                     class="form-control"
+                     [value]="documentoSeleccionadoOficio"
+                     placeholder="Seleccione un documento"
+                     readonly>
+              <button type="button"
+                      class="btn btn-outline-primary"
+                      data-bs-toggle="modal"
+                      data-bs-target="#documentoModal"
+                      [disabled]="!puedeSeleccionarEntidades()">
+                <i class="bi bi-file-earmark-text me-1"></i> Seleccionar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 🔹 Fila 2: Empleado -->
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Químico Farmacéutico</label>
+            <div class="input-group">
+              <input type="text"
+                     class="form-control"
+                     [value]="empleadoSeleccionadoNombre"
+                     placeholder="Seleccione un empleado"
+                     readonly>
+              <button type="button"
+                      class="btn btn-outline-primary"
+                      data-bs-toggle="modal"
+                      data-bs-target="#empleadoModal"
+                      [disabled]="!puedeSeleccionarEntidades()">
+                <i class="bi bi-person me-1"></i> Seleccionar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 🔹 Fila 3: Resultado Cuantitativo y Estado -->
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Resultado Cuantitativo (g/l)</label>
+            <div class="input-group">
+              <input 
+                type="number" 
+                class="form-control" 
+                formControlName="cualitativo" 
+                placeholder="Ej: 0.85"
+                step="0.01"
+                min="0"
+                [readonly]="!puedeEditarResultadoCuantitativo()">
+              <span class="input-group-text">g/l</span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Estado</label>
+            <div class="btn-group w-100" role="group" *ngIf="puedeEditarEstadoCampo()">
+              <button type="button"
+                      class="btn btn-outline-warning w-50"
+                      [class.active]="asignacionForm.get('estado')?.value === 'EN_PROCESO'"
+                      (click)="asignacionForm.patchValue({ estado: 'EN_PROCESO' })">
+                <i class="bi bi-hourglass-split me-1"></i> EN PROCESO
+              </button>
+              <button type="button"
+                      class="btn btn-outline-success w-50"
+                      [class.active]="asignacionForm.get('estado')?.value === 'COMPLETADO'"
+                      (click)="asignacionForm.patchValue({ estado: 'COMPLETADO' })">
+                <i class="bi bi-check-circle-fill me-1"></i> COMPLETADO
+              </button>
+            </div>
+            <input type="text"
+                   class="form-control"
+                   *ngIf="!puedeEditarEstadoCampo()"
+                   [value]="asignacionForm.get('estado')?.value"
+                   readonly>
+            <input type="hidden" formControlName="estado">
+          </div>
+        </div>
+
+        <!-- 🔹 Botones -->
+        <div class="d-flex justify-content-end">
+          <button type="button" class="btn btn-secondary me-2" (click)="cancelar()">
+            <i class="bi bi-x-circle me-1"></i> Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="asignacionForm.invalid">
+            <i class="bi bi-save me-1"></i>
+            {{ asignacionForm.get('id')?.value ? 'Actualizar' : 'Guardar' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 🌟 Modal para seleccionar documento -->
+<div class="modal fade" id="documentoModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">Seleccionar Documento</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <input type="text"
+                 class="form-control"
+                 placeholder="Buscar por n° oficio, procedencia o nombre..."
+                 [(ngModel)]="terminoBusqueda"
+                 (input)="filtrarDocumentos()">
+        </div>
+        <table class="table table-hover align-middle">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>N° Oficio</th>
+              <th>Nombre documento</th>
+              <th>Procedencia</th>
+              <th>Involucrado</th>
+              <th>Estado</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let doc of documentosFiltrados">
+              <td>{{ doc.id }}</td>
+              <td>{{ doc.nroOficio }}</td>
+              <td>{{ doc.nombreDocumento}}</td>
+              <td>{{ doc.procedencia }}</td>
+              <td>{{ doc.nombres }} {{ doc.apellidos }}</td>
+              <td>
+                <span *ngIf="isDocumentoAsignado(doc.id!)" class="badge bg-warning text-dark">
+                  Asignado
+                </span>
+                <span *ngIf="!isDocumentoAsignado(doc.id!)" class="badge bg-success">
+                  Disponible
+                </span>
+              </td>
+              <td>
+                <button *ngIf="!isDocumentoAsignado(doc.id!) && puedeSeleccionarEntidades()"
+                        type="button"
+                        class="btn btn-sm btn-outline-primary"
+                        (click)="seleccionarDocumento(doc)"
+                        data-bs-dismiss="modal">
+                  <i class="bi bi-file-earmark-text me-1"></i> Seleccionar
+                </button>
+                <span *ngIf="isDocumentoAsignado(doc.id!) || !puedeSeleccionarEntidades()" class="text-muted small">
+                  {{ !puedeSeleccionarEntidades() ? 'Solo lectura' : 'No disponible' }}
+                </span>
+              </td>
+            </tr>
+            <tr *ngIf="documentosFiltrados.length === 0">
+              <td colspan="6" class="text-center text-muted">No se encontraron documentos</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 🌟 Modal para seleccionar empleado -->
+<div class="modal fade" id="empleadoModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">Seleccionar Empleado</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <input type="text"
+                 class="form-control"
+                 placeholder="Buscar por nombre, apellido o DNI..."
+                 [(ngModel)]="terminoBusquedaEmpleado"
+                 (input)="filtrarEmpleados()">
+        </div>
+        <table class="table table-hover align-middle">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Apellido</th>
+              <th>DNI</th>
+              <th>Cargo</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let emp of empleadosFiltrados">
+              <td>{{ emp.id }}</td>
+              <td>{{ emp.nombre }}</td>
+              <td>{{ emp.apellido }}</td>
+              <td>{{ emp.dni }}</td>
+              <td>{{ emp.cargo }}</td>
+              <td>
+                <button *ngIf="puedeSeleccionarEntidades()"
+                        type="button"
+                        class="btn btn-sm btn-outline-primary"
+                        (click)="seleccionarEmpleado(emp)"
+                        data-bs-dismiss="modal">
+                  <i class="bi bi-person me-1"></i> Seleccionar
+                </button>
+                <span *ngIf="!puedeSeleccionarEntidades()" class="text-muted small">
+                  Solo lectura
+                </span>
+              </td>
+            </tr>
+            <tr *ngIf="empleadosFiltrados.length === 0">
+              <td colspan="6" class="text-center text-muted">No se encontraron empleados</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .btn:disabled,
+  .form-control[readonly] {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: #f8f9fa;
+  }
+</style>

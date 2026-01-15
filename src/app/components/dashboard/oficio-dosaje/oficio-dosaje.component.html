@@ -1,0 +1,115 @@
+<!-- src/app/components/dashboard/oficio-dosaje/oficio-dosaje.component.html -->
+
+<div class="container mt-4">
+  <!-- Encabezado -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="text-primary">
+      <i class="bi bi-journal-text me-2"></i> Gestión de Oficios Dosaje
+    </h2>
+    <button class="btn btn-success" (click)="nuevoOficio()">
+      <i class="bi bi-plus-circle me-2"></i> Nuevo Oficio Dosaje
+    </button>
+  </div>
+
+  <!-- 🔎 Buscador -->
+  <div class="mb-4">
+    <div class="input-group">
+      <span class="input-group-text bg-primary text-white">
+        <i class="bi bi-search"></i>
+      </span>
+      <input
+        type="text"
+        class="form-control"
+        placeholder="Buscar por nombre, número de informe o documento..."
+        [(ngModel)]="searchTerm"
+        (input)="goToPage(1)"
+      />
+    </div>
+  </div>
+
+  <!-- 📋 Grid de cards -->
+  <div class="row g-4">
+    <div
+      class="col-12 col-md-6 col-lg-4"
+      *ngFor="let oficio of paginatedOficios"
+    >
+      <div class="card shadow-sm h-100 border-0">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+          <div>
+            <h5 class="mb-0 text-primary">Oficio #{{ oficio.id }}</h5>
+            <small class="text-muted">Doc: {{ oficio.documentoId }}</small>
+          </div>
+          <div class="btn-group" role="group">
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-primary"
+              (click)="editarOficio(oficio.id!)"
+            >
+              <i class="bi bi-pencil-square"></i>
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-info"
+              (click)="vistaPrevia(oficio)"
+            >
+              <i class="bi bi-eye"></i>
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <h6 class="text-secondary">Nombre del Oficio</h6>
+            <p class="mb-0">{{ oficio.nombreOficio }}</p> 
+          </div>
+          <div class="mb-3">
+            <h6 class="text-secondary">Dirigido a</h6>
+            <!-- ✅ Mostrar con saltos de línea reales -->
+            <p class="mb-0" [innerHTML]="formatMultiline(oficio.dirigido)"></p>
+          </div>
+          <div class="mb-3">
+            <h6 class="text-secondary">Número de Informe</h6>
+            <p class="mb-0">{{ oficio.nroInforme }}</p>
+          </div>
+          <div class="mb-3">
+            <h6 class="text-secondary">Tipo de Muestra</h6>
+            <span class="badge bg-info">{{ oficio.tipoMuestra }}</span>
+          </div>
+          <div class="mb-3">
+            <h6 class="text-secondary">Nombre Completo</h6>
+            <p class="mb-0">{{ oficio.nombreCompleto }}</p>
+          </div>
+          <div class="mb-3">
+            <h6 class="text-secondary">Auxiliar</h6>
+            <p class="mb-0">{{ oficio.auxiliar }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🚫 Sin resultados -->
+  <div class="text-center py-5" *ngIf="filteredOficios.length === 0">
+    <i class="bi bi-search display-4 text-muted mb-3"></i>
+    <h5 class="text-muted">No se encontraron oficios</h5>
+    <p class="text-muted">Intenta con otros términos de búsqueda</p>
+  </div>
+
+  <!-- 📄 Paginación -->
+  <nav *ngIf="totalPages > 1" aria-label="Paginación de oficios">
+    <ul class="pagination justify-content-center">
+      <li class="page-item" [class.disabled]="currentPage === 1">
+        <button class="page-link" (click)="prevPage()">Anterior</button>
+      </li>
+      <li
+        class="page-item"
+        *ngFor="let page of getPageNumbers()"
+        [class.active]="page === currentPage"
+      >
+        <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
+      </li>
+      <li class="page-item" [class.disabled]="currentPage === totalPages">
+        <button class="page-link" (click)="nextPage()">Siguiente</button>
+      </li>
+    </ul>
+  </nav>
+</div>

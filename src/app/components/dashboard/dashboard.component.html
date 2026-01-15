@@ -1,0 +1,79 @@
+<div class="d-flex" id="wrapper">
+  <!-- Sidebar -->
+  <div id="sidebar-wrapper"
+       class="d-flex flex-column flex-shrink-0 p-3 bg-primary text-white shadow"
+       [ngClass]="{'collapsed': !isMenuOpen}"
+       style="width: 250px; min-height: 100vh;">
+
+    <!-- Logo -->
+    <!-- ✅ Ahora es un enlace de Angular -->
+<a routerLink="/dashboard" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+  <svg width="32" height="32" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="currentColor"/>
+    <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <span class="fs-5 fw-bold ms-2">Dosaje y Toxicologia</span>
+</a>
+    <hr class="text-white">
+
+    <!-- Menú -->
+    <ul class="nav nav-pills flex-column mb-3">
+      <li *ngFor="let item of filteredMenuItems" class="nav-item">
+        <a [routerLink]="item.route"
+           routerLinkActive="active"
+           class="nav-link text-white d-flex align-items-center rounded-3 px-3 py-2 mb-1">
+          <i class="bi me-2 fs-5" [ngClass]="item.icon"></i>
+          <span>{{ item.title }}</span>
+        </a>
+      </li>
+    </ul>
+
+    <!-- Botón de Cerrar Sesión fijo -->
+    <div class="sticky-top pt-2">
+      <button class="btn btn-danger w-100 d-flex align-items-center justify-content-center"
+              (click)="logout()">
+        <i class="bi bi-box-arrow-right me-2 fs-5"></i>
+        <strong>Cerrar Sesión</strong>
+      </button>
+    </div>
+
+    <hr class="text-white mt-3">
+  </div>
+
+  <!-- Page Content -->
+  <div id="page-content-wrapper" class="flex-grow-1">
+    <!-- Top Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary border-bottom shadow-sm">
+      <div class="container-fluid">
+        <!-- Botón hamburguesa -->
+        <button class="btn btn-outline-light me-2" (click)="toggleMenu()">
+          <i class="bi bi-list"></i>
+        </button>
+        <h4 class="text-white mb-0">{{ getCurrentPageTitle() }}</h4>
+
+        <div class="collapse navbar-collapse justify-content-end">
+          <!-- 🔔 Notifications - NAVEGACIÓN -->
+          <a class="btn btn-light position-relative me-3" routerLink="/dashboard/notificaciones">
+            <i class="bi bi-bell"></i>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                  *ngIf="unreadCount > 0">
+              {{ unreadCount }}
+            </span>
+          </a>
+
+          <!-- Usuario -->
+          <div class="d-flex align-items-center text-white fw-bold">
+            <i class="bi bi-person-circle me-2 fs-5"></i>
+            Bienvenido, {{ userName }}
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Content Area -->
+    <div class="container-fluid p-4">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>

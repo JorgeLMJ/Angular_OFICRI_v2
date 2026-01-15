@@ -1,0 +1,96 @@
+/* Sidebar Wrapper */
+#sidebar-wrapper {
+  width: 15rem;
+  min-height: 100vh;
+  transition: margin 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+#sidebar-wrapper.collapsed {
+  margin-left: -15rem;
+}
+
+/* Hover effect */
+#sidebar-wrapper .nav-link:hover {
+  background-color: #5dade2 !important;
+  color: #fff !important;
+  transform: translateX(4px);
+  transition: all 0.2s ease;
+}
+
+/* Active item */
+#sidebar-wrapper .nav-link.active {
+  background-color: #3498db !important;
+  color: #fff !important;
+  border-left: 4px solid #1a5276;
+  font-weight: 600;
+}
+
+/* Click Animation */
+#sidebar-wrapper .nav-link.clicked {
+  animation: clickPulse 0.3s ease;
+  background-color: #2980b9 !important;
+}
+
+@keyframes clickPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.96); box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4); }
+  100% { transform: scale(1); }
+}
+
+/* Navbar Enhancements */
+.navbar {
+  transition: background-color 0.3s ease;
+}
+
+.navbar .dropdown-menu {
+  border-radius: 0.75rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.navbar .dropdown-item:hover {
+  background-color: #f8f9fa;
+  color: #3498db;
+}
+
+/* Dark Mode Toggle */
+.theme-toggle {
+  width: 40px;
+  height: 24px;
+  border-radius: 12px;
+  background-color: #e9ecef;
+  position: relative;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.theme-toggle::after {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: white;
+  top: 2px;
+  left: 2px;
+  transition: 0.3s ease;
+}
+
+.theme-toggle.dark {
+  background-color: #3498db;
+}
+
+.theme-toggle.dark::after {
+  transform: translateX(16px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  #sidebar-wrapper {
+    margin-left: -15rem;
+  }
+  #sidebar-wrapper:not(.collapsed) {
+    margin-left: 0;
+  }
+}
+

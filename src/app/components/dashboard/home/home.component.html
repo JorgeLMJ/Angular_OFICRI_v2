@@ -1,0 +1,395 @@
+<!-- src/app/components/dashboard/home/home.component.html -->
+
+<div class="container-fluid mt-4">
+  <!-- Welcome Section -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+          <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
+            <div>
+              <h1 class="display-5 fw-bold text-primary mb-2">👋 Bienvenido, {{ userName }}!</h1>
+              <p class="lead text-muted mb-0">{{ currentRole }} - Sistema de Gestión Integral</p>
+            </div>
+            <div class="d-flex gap-2 mt-3 mt-md-0">
+              <button class="btn btn-outline-primary" (click)="refreshStats()">
+                <i class="bi bi-arrow-clockwise me-2"></i> Actualizar
+              </button>
+            </div>
+          </div>
+
+          <!-- Panel Administrador (solo visible si es Administrador) -->
+          <div *ngIf="isAdministrador()" class="row g-4">
+            <!-- Estadísticas completas -->
+            <div class="col-12 col-md-6 col-lg-3">
+              <div class="card bg-primary text-white border-0 shadow-sm h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="text-white-75 mb-1">Usuarios</h6>
+                      <h2 class="mb-0">{{ stats.usuarios }}</h2>
+                    </div>
+                    <div class="display-4">
+                      <i class="bi bi-people"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-12 col-md-6 col-lg-3">
+              <div class="card bg-success text-white border-0 shadow-sm h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="text-white-75 mb-1">Empleados</h6>
+                      <h2 class="mb-0">{{ stats.empleados }}</h2>
+                    </div>
+                    <div class="display-4">
+                      <i class="bi bi-person-badge"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-12 col-md-6 col-lg-3">
+              <div class="card bg-info text-white border-0 shadow-sm h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="text-white-75 mb-1">Documentos</h6>
+                      <h2 class="mb-0">{{ stats.documentos }}</h2>
+                    </div>
+                    <div class="display-4">
+                      <i class="bi bi-file-earmark-text"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-12 col-md-6 col-lg-3">
+              <div class="card bg-warning text-white border-0 shadow-sm h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="text-white-75 mb-1">Dosajes</h6>
+                      <h2 class="mb-0">{{ stats.dosajes }}</h2>
+                    </div>
+                    <div class="display-4">
+                      <i class="bi bi-capsule"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-12 col-md-6 col-lg-3">
+              <div class="card bg-danger text-white border-0 shadow-sm h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="text-white-75 mb-1">Toxicología</h6>
+                      <h2 class="mb-0">{{ stats.toxicologia }}</h2>
+                    </div>
+                    <div class="display-4">
+                      <i class="bi bi-flask"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-12 col-md-6 col-lg-3">
+              <div class="card bg-secondary text-white border-0 shadow-sm h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="text-white-75 mb-1">Asign. Dosaje</h6>
+                      <h2 class="mb-0">{{ stats.asignacionesDosaje }}</h2>
+                    </div>
+                    <div class="display-4">
+                      <i class="bi bi-journal-text"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-12 col-md-6 col-lg-3">
+              <div class="card bg-dark text-white border-0 shadow-sm h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="text-white-75 mb-1">Asign. Toxicol.</h6>
+                      <h2 class="mb-0">{{ stats.asignacionesToxicologia }}</h2>
+                    </div>
+                    <div class="display-4">
+                      <i class="bi bi-beaker"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-12 col-md-6 col-lg-3">
+              <div class="card bg-purple text-white border-0 shadow-sm h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="text-white-75 mb-1">Notificaciones</h6>
+                      <h2 class="mb-0">{{ stats.notificaciones }}</h2>
+                    </div>
+                    <div class="display-4">
+                      <i class="bi bi-bell"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Panel Simplificado (para otros roles) -->
+          <div *ngIf="!isAdministrador()" class="row g-4">
+            <div class="col-12 col-md-6 col-lg-4">
+              <div class="card bg-primary text-white border-0 shadow-sm h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="text-white-75 mb-1">Usuarios</h6>
+                      <h2 class="mb-0">{{ stats.usuarios }}</h2>
+                    </div>
+                    <div class="display-4">
+                      <i class="bi bi-people"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-12 col-md-6 col-lg-4">
+              <div class="card bg-success text-white border-0 shadow-sm h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="text-white-75 mb-1">Empleados</h6>
+                      <h2 class="mb-0">{{ stats.empleados }}</h2>
+                    </div>
+                    <div class="display-4">
+                      <i class="bi bi-person-badge"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-12 col-md-6 col-lg-4">
+              <div class="card bg-info text-white border-0 shadow-sm h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="text-white-75 mb-1">Documentos</h6>
+                      <h2 class="mb-0">{{ stats.documentos }}</h2>
+                    </div>
+                    <div class="display-4">
+                      <i class="bi bi-file-earmark-text"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-12 col-md-6 col-lg-4">
+              <div class="card bg-warning text-white border-0 shadow-sm h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="text-white-75 mb-1">Dosajes</h6>
+                      <h2 class="mb-0">{{ stats.dosajes }}</h2>
+                    </div>
+                    <div class="display-4">
+                      <i class="bi bi-capsule"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-12 col-md-6 col-lg-4">
+              <div class="card bg-danger text-white border-0 shadow-sm h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="text-white-75 mb-1">Toxicología</h6>
+                      <h2 class="mb-0">{{ stats.toxicologia }}</h2>
+                    </div>
+                    <div class="display-4">
+                      <i class="bi bi-flask"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-12 col-md-6 col-lg-4">
+              <div class="card bg-secondary text-white border-0 shadow-sm h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="text-white-75 mb-1">Asign. Dosaje</h6>
+                      <h2 class="mb-0">{{ stats.asignacionesDosaje }}</h2>
+                    </div>
+                    <div class="display-4">
+                      <i class="bi bi-journal-text"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-12 col-md-6 col-lg-4">
+              <div class="card bg-dark text-white border-0 shadow-sm h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="text-white-75 mb-1">Asign. Toxicol.</h6>
+                      <h2 class="mb-0">{{ stats.asignacionesToxicologia }}</h2>
+                    </div>
+                    <div class="display-4">
+                      <i class="bi bi-beaker"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-12 col-md-6 col-lg-4">
+              <div class="card bg-purple text-white border-0 shadow-sm h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="text-white-75 mb-1">Notificaciones</h6>
+                      <h2 class="mb-0">{{ stats.notificaciones }}</h2>
+                    </div>
+                    <div class="display-4">
+                      <i class="bi bi-bell"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <h2 class="mb-4">🚀 Acciones Rápidas</h2>
+      <div class="row g-4">
+        <!-- Empleados (solo Administrador) -->
+        <div class="col-12 col-md-6 col-lg-3" *ngIf="hasRole(['Administrador'])">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+              <div class="mb-3">
+                <div class="bg-primary bg-opacity-10 rounded-circle p-3 d-inline-block">
+                  <i class="bi bi-people fs-3 text-primary"></i>
+                </div>
+              </div>
+              <h5 class="card-title">Gestionar Empleados</h5>
+              <p class="card-text text-muted">Agrega, edita o elimina empleados</p>
+              <button class="btn btn-primary w-100" (click)="navigateTo('/dashboard/empleados')">
+                <i class="bi bi-arrow-right me-2"></i> Ir a Empleados
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Documentos (todos los roles) -->
+        <div class="col-12 col-md-6 col-lg-3" *ngIf="hasRole(['Administrador', 'Auxiliar de Dosaje', 'Auxiliar de Toxicologia'])">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+              <div class="mb-3">
+                <div class="bg-success bg-opacity-10 rounded-circle p-3 d-inline-block">
+                  <i class="bi bi-file-earmark-text fs-3 text-success"></i>
+                </div>
+              </div>
+              <h5 class="card-title">Gestionar Documentos</h5>
+              <p class="card-text text-muted">Crea y administra documentos</p>
+              <button class="btn btn-success w-100" (click)="navigateTo('/dashboard/documento')">
+                <i class="bi bi-arrow-right me-2"></i> Ir a Documentos
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Asignaciones Dosaje (Administrador y Auxiliar de Dosaje) -->
+        <div class="col-12 col-md-6 col-lg-3" *ngIf="hasRole(['Administrador', 'Auxiliar de Dosaje', 'Quimico Farmaceutico'])">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+              <div class="mb-3">
+                <div class="bg-warning bg-opacity-10 rounded-circle p-3 d-inline-block">
+                  <i class="bi bi-journal-text fs-3 text-warning"></i>
+                </div>
+              </div>
+              <h5 class="card-title">Asignaciones Dosaje</h5>
+              <p class="card-text text-muted">Administra asignaciones de dosaje</p>
+              <button class="btn btn-warning w-100 text-white" (click)="navigateTo('/dashboard/asignaciones-dosaje')">
+                <i class="bi bi-arrow-right me-2"></i> Ir a Dosajes
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Asignaciones Toxicología (Administrador y Auxiliar de Toxicología) -->
+        <div class="col-12 col-md-6 col-lg-3" *ngIf="hasRole(['Administrador', 'Auxiliar de Toxicologia', 'Quimico Farmaceutico'])">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+              <div class="mb-3">
+                <div class="bg-danger bg-opacity-10 rounded-circle p-3 d-inline-block">
+                  <i class="bi bi-beaker fs-3 text-danger"></i>
+                </div>
+              </div>
+              <h5 class="card-title">Asignaciones Toxicología</h5>
+              <p class="card-text text-muted">Administra asignaciones de toxicología</p>
+              <button class="btn btn-danger w-100" (click)="navigateTo('/dashboard/asignaciones-toxicologia')">
+                <i class="bi bi-arrow-right me-2"></i> Ir a Toxicología
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Reportes (todos los roles) -->
+        <div class="col-12 col-md-6 col-lg-3" *ngIf="hasRole(['Administrador', 'Auxiliar de Dosaje', 'Auxiliar de Toxicologia', 'Quimico Farmaceutico'])">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+              <div class="mb-3">
+                <div class="bg-info bg-opacity-10 rounded-circle p-3 d-inline-block">
+                  <i class="bi bi-bar-chart fs-3 text-info"></i>
+                </div>
+              </div>
+              <h5 class="card-title">Reportes Estadísticos</h5>
+              <p class="card-text text-muted">Visualiza reportes y métricas</p>
+              <button class="btn btn-info w-100 text-white" (click)="navigateTo('/dashboard/reportes')">
+                <i class="bi bi-arrow-right me-2"></i> Ver Reportes
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .bg-purple {
+    background-color: #6f42c1 !important;
+  }
+  .text-purple {
+    color: #6f42c1 !important;
+  }
+</style>
