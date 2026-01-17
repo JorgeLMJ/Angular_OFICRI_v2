@@ -1,5 +1,4 @@
 <!-- src/app/components/dashboard/asignaciones-toxicologia/asignaciones-toxicologia.component.html -->
-
 <div class="container mt-4">
   <!-- Encabezado -->
   <div class="d-flex justify-content-between align-items-center mb-4">
@@ -16,7 +15,7 @@
     <div class="input-group">
       <span class="input-group-text bg-primary text-white"><i class="bi bi-search"></i></span>
       <input type="text" class="form-control" placeholder="Buscar por estado, ID de documento o empleado..."
-             [(ngModel)]="searchTerm" (input)="filtrarAsignaciones()">
+        [(ngModel)]="searchTerm" (input)="filtrarAsignaciones()">
     </div>
   </div>
 
@@ -28,15 +27,15 @@
           <div>
             <h5 class="mb-1 text-primary">Asignación #{{ asignacion.id }}</h5>
             <p class="mb-1 text-muted small">
-            <i class="bi bi-file-earmark me-1"></i> Doc: {{ asignacion.documentoId }} |
-            <i class="bi bi-person me-1"></i> Emp: 
-            <span *ngIf="empleadosMap.has(asignacion.empleadoId)">
-              {{ empleadosMap.get(asignacion.empleadoId)?.nombre }} {{ empleadosMap.get(asignacion.empleadoId)?.apellido }}
-            </span>
-            <span *ngIf="!empleadosMap.has(asignacion.empleadoId)">
-              {{ asignacion.empleadoId }}
-            </span>
-          </p>
+              <i class="bi bi-file-earmark me-1"></i> Doc: {{ asignacion.documentoId }} |
+              <i class="bi bi-person me-1"></i> Emp:
+              <span *ngIf="empleadosMap.has(asignacion.empleadoId)">
+                {{ empleadosMap.get(asignacion.empleadoId)?.nombre }} {{ empleadosMap.get(asignacion.empleadoId)?.apellido }}
+              </span>
+              <span *ngIf="!empleadosMap.has(asignacion.empleadoId)">
+                {{ asignacion.empleadoId }}
+              </span>
+            </p>
             <p class="mb-0">
               <strong>Área:</strong> {{ asignacion.area }}
             </p>
@@ -50,9 +49,8 @@
             </button>
           </div>
         </div>
-
         <div class="card-body">
-          <p><strong>Estado:</strong> 
+          <p><strong>Estado:</strong>
             <span class="badge" [ngClass]="{
               'bg-info': asignacion.estado === 'EN_PROCESO',
               'bg-success': asignacion.estado === 'COMPLETADO'
@@ -60,14 +58,15 @@
           </p>
           <h6>Resultados:</h6>
           <ul class="list-group list-group-flush small">
-             <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let res of getResultadosArray(asignacion.resultados)">
+            <li class="list-group-item d-flex justify-content-between align-items-center"
+              *ngFor="let res of getResultadosArray(asignacion.resultados)">
               {{ res.droga }}
               <span class="badge" [ngClass]="{'bg-success': res.resultado === 'Positivo', 'bg-danger': res.resultado === 'Negativo'}">
                 {{ res.resultado }}
               </span>
             </li>
             <li class="list-group-item text-muted" *ngIf="getResultadosArray(asignacion.resultados).length === 0">
-                Sin resultados registrados.
+              Sin resultados registrados.
             </li>
           </ul>
         </div>
@@ -89,17 +88,31 @@
         <li class="page-item" [class.disabled]="currentPage === 1">
           <button class="page-link" (click)="prevPage()">Anterior</button>
         </li>
-        
-        <li class="page-item" 
-            *ngFor="let page of getPageNumbers(); trackBy: trackByPage"
-            [class.active]="page === currentPage">
+        <li class="page-item" *ngFor="let page of getPageNumbers(); trackBy: trackByPage"
+          [class.active]="page === currentPage">
           <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
         </li>
-        
         <li class="page-item" [class.disabled]="currentPage === totalPages">
           <button class="page-link" (click)="nextPage()">Siguiente</button>
         </li>
       </ul>
     </nav>
+  </div>
+</div>
+
+<!-- 👇 NUEVO: Modal para visualizar el PDF -->
+<div class="modal fade" id="pdfModal" #pdfModal tabindex="-1" aria-labelledby="pdfModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white" style="padding: 0.25rem 0.75rem; min-height: 2.25rem;">
+        <h5 class="modal-title" id="pdfModalLabel">{{ pdfModalTitle }}</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-0" style="height: 100vh; overflow: hidden;">
+        <iframe *ngIf="currentPdfUrl" [src]="currentPdfUrl | safeUrl" width="100%" height="100%" frameborder="0"
+          style="border: none; background: #fff; overflow: hidden;">
+        </iframe>
+      </div>
+    </div>
   </div>
 </div>

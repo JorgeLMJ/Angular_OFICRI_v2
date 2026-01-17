@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+// src/app/components/dashboard/oficio-dosaje/oficio-dosaje.component.ts
+import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -6,21 +7,31 @@ import { OficioDosaje } from '../../../models/oficio-dosaje.model';
 import { OficioDosajeService } from '../../../services/oficio-dosaje.service';
 import { AuthService } from '../../../services/auth.service';
 import Swal from 'sweetalert2';
+import * as bootstrap from 'bootstrap';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { SafeUrlPipe } from '../../../pipes/safe-url.pipe';
 
 @Component({
   selector: 'app-oficio-dosaje',
   templateUrl: './oficio-dosaje.component.html',
   standalone: true,
-  imports: [CommonModule, FormsModule]
+  imports: [CommonModule, FormsModule, SafeUrlPipe]
 })
-export class OficioDosajeComponent implements OnInit {
+export class OficioDosajeComponent implements OnInit, AfterViewInit, OnDestroy {
   oficios: OficioDosaje[] = [];
   searchTerm = '';
 
-  // Paginación (opcional, puedes quitar si no la usas)
+  // Paginación
   currentPage = 1;
   pageSize = 6;
   maxVisiblePages = 5;
+
+  // 👇 NUEVO: Propiedades para el modal de PDF
+  @ViewChild('pdfModal') pdfModalEl!: ElementRef;
+  private modalInstance: bootstrap.Modal | null = null;
+  currentPdfUrl: string | null = null;
+  pdfModalTitle = 'Vista Previa del Oficio';
 
   constructor(
     private oficioDosajeService: OficioDosajeService,
@@ -30,6 +41,22 @@ export class OficioDosajeComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadOficios();
+  }
+
+  ngAfterViewInit(): void {
+    if (this.pdfModalEl) {
+      this.modalInstance = new bootstrap.Modal(this.pdfModalEl.nativeElement, {
+        backdrop: true,
+        keyboard: true,
+        focus: true
+      });
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.modalInstance) {
+      this.modalInstance.dispose();
+    }
   }
 
   nuevoOficio(): void {
@@ -52,7 +79,7 @@ export class OficioDosajeComponent implements OnInit {
       }
     });
   }
-  // ✅ Nueva función para formatear texto multilínea en la card
+
   formatMultiline(text: string | null | undefined): string {
     if (!text) return '—';
     return text.replace(/\n/g, '<br>');
@@ -108,306 +135,132 @@ export class OficioDosajeComponent implements OnInit {
     }
     return pages;
   }
-vistaPrevia(oficio: OficioDosaje): void {
-  const hoy = new Date();
-  const diaHoy = hoy.getDate();
-  const mesHoy = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'setiembre', 'octubre', 'noviembre', 'diciembre'][hoy.getMonth()];
-  const anioHoy = hoy.getFullYear();
-  const fechaOficio = `${diaHoy} de ${mesHoy} del ${anioHoy}`;
-
-  const nroOficio = oficio.nroInforme || 'S/N';
-  const referencia = oficio.referencia || 'OFICIO. N°2844-2025-REGPOL-CUS/DIVOPUS-CUS/COM SAN-SIDF. DEL 08SET2025';
-  const dirigido = oficio.dirigido || 'Destinatario no especificado';
-  const auxiliar = oficio.auxiliar || 'Auxiliar no especificado';
-
-  const printWindow = window.open('', '_blank');
-  if (printWindow) {
-    printWindow.document.write(`
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Oficio Dosaje - ${nroOficio}</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <style>
-    @page {
-      size: A4;
-      margin: 2.54cm;
-      margin-top: 10mm;   
-  margin-bottom: 10mm;
-    }
-    body {
-      font-family: Arial, sans-serif;
-      font-size: 14pt;
-      line-height: 1.6;
-      margin: 0;
-      padding: 0;
-      width: 210mm;
-      height: 297mm;
-      box-sizing: border-box;
-      background-color: #e0f7fa;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-    }
-    .page-container {
-      position: relative;
-      width: 100%;
-      min-height: 100%;
-      display: flex;
-      flex-direction: column;
-    }
-    .header {
-      width: 100%;
-      background: white;
-      padding: 15px 0;
-      border-bottom: 1px solid #ccc;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 80px;
-    }
-    .header-logo {
-      width: 100%;
-      max-width: 800px;
-      height: auto;
-      object-fit: contain;
-      border: none;
-    }
-    .lema-nacional {
-      text-align: center;
-      font-size: 12pt;
-      font-weight: bold;
-      margin: 8px 0;
-      color: #003366;
-    }
-    .fecha-externa {
-      text-align: right;
-      font-size: 11pt;
-      margin: 10px 0 20px 0;
-    }
-    .main-content {
-      flex: 1;
-      margin-left: 2cm;
-    }
-    .oficio-number {
-      font-weight: bold;
-      text-decoration: underline;
-      margin: 10px 0 15px 0;
-      font-size: 13pt;
-    }
-    .section,
-    .indent,
-    .bullet-list,
-    .closing-text,
-    .signature-container,
-    .image-box {
-      margin-bottom: 2px;
-    }
-    .section {
-      display: flex;
-      gap: 10px;
-      margin-top: 20px;
-    }
-    .section-title-box {
-      font-weight: bold;
-      min-width: 120px;
-      flex-shrink: 0;
-      text-align: right;
-      margin-top: 15px;
-    }
-    .section-content-box {
-      margin-top: 15px;
-      flex: 1;
-    }
-    .indent {
-      text-indent: 3.5cm;
-      text-align: justify;
-      margin-top: 15px;
-    }
-    .bullet-list {
-      margin-left: 30px;
-      padding-left: 0;
-    }
-    .bullet-list li {
-      margin: 5px 0;
-    }
-    .closing-text {
-      text-indent: 4cm;
-      text-align: justify;
-      margin-top: 15px;
-    }
-    .signature-container {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 30px;
-      font-size: 11pt;
-    }
-    .signature-left {
-      font-style: italic;
-    }
-    .signature-right {
-      font-weight: bold;
-    }
-    .image-box {
-      width: 50%; 
-      height: 150px;
-      float: right;
-      margin-top: 50px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .image-box img {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-      border: none;
-    }
-
-    /* ✅ PIE DE PÁGINA PERSONALIZADO */
-    .custom-footer {
-      position: absolute;
-      bottom: -220px;
-      left: 0;
-      width: 100%;
-      box-sizing: border-box;
-      background-color: white;
-      text-align: center;
-      font-size: 10pt;
-      display: flex;
-      flex-direction: column;   
-      justify-content: flex-end; 
-      align-items: center;  
-    }
 
 
-    .print-button-container {
-      position: fixed;
-      top: 20px;
-      left: 60px;
-      z-index: 9999;
-      display: flex;
-      gap: 10px;
-    }
-    .print-button, .pdf-button {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    }
-    .print-button {
-      background-color: #198754;
-      color: white;
-    }
-    .pdf-button {
-      background-color: #0d6efd;
-      color: white;
-    }
-    @media print {
-      .print-button-container { display: none; }
-    }
-  </style>
-</head>
-<body>
-  <div class="print-button-container">
-    <button class="print-button" onclick="window.print()">🖨️ Imprimir</button>
-    <button class="pdf-button" onclick="generarPDF()">📄 Generar PDF</button>
-  </div>
 
-  <div class="page-container" id="pdf-content">
-    <div class="header">
-      <img src="/assets/img/logo_oficio.png" class="header-logo" onerror="this.style.display='none'">
+  async vistaPrevia(oficio: OficioDosaje): Promise<void> {
+    try {
+      const hoy = new Date();
+      const diaHoy = hoy.getDate();
+      const mesHoy = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'setiembre', 'octubre', 'noviembre', 'diciembre'][hoy.getMonth()];
+      const anioHoy = hoy.getFullYear();
+      const fechaOficio = `${diaHoy} de ${mesHoy} del ${anioHoy}`;
+
+      const nroOficio = oficio.nroInforme || 'S/N';
+      const referencia = oficio.referencia || 'OFICIO. N°2844-2025-REGPOL-CUS/DIVOPUS-CUS/COM SAN-SIDF. DEL 08SET2025';
+      const dirigido = oficio.dirigido || 'Destinatario no especificado';
+      const auxiliar = oficio.auxiliar || 'Auxiliar no especificado';
+
+      // 👇 Generar HTML para el PDF (sin color de fondo, con fuente 12pt)
+      const htmlContent = `
+<div style="font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.6; width: 210mm; height: 297mm; box-sizing: border-box; padding: 25.4mm;">
+  <div style="position: relative; width: 100%; min-height: 100%; display: flex; flex-direction: column;">
+
+    <!-- Encabezado: Imagen y lema -->
+    <div style="width: 100%; background: white; padding: 0; border-bottom: 1px solid #ccc; display: flex; justify-content: center; align-items: flex-start; margin-top: -70px;">
+      <img src="/assets/img/logo_oficio.png" style="width: 100%; max-width: 800px; height: auto; object-fit: contain; border: none;" onerror="this.style.display='none'">
     </div>
 
-    <div class="lema-nacional">"Año De La Recuperación y Consolidación De La Economía Peruana"</div>
+    <!-- Lema en negro oscuro -->
+    <div style="text-align: center; font-size: 11pt; font-weight: bold; margin: 5px 0 10px 0; color: #000;">
+      "Año De La Recuperación y Consolidación De La Economía Peruana"
+    </div>
 
-    <div class="fecha-externa">${fechaOficio}.</div>
+    <!-- Fecha -->
+    <div style="text-align: right; font-size: 10pt; margin: 10px 0 20px 0;">
+      ${fechaOficio}.
+    </div>
 
-    <div class="main-content">
-      <div class="oficio-number">OFICIO N°${nroOficio}-2025-COMOPPOL PNP/DIRNOS/REGPOL-CUS/DIVINCRÍ-CUS/OFICRI-DJE.ETL</div>
-
-      <div class="section">
-        <div class="section-title-box">SEÑOR(A):</div>
-        <div class="section-content-box"><strong>${dirigido.replace(/\n/g, '<br>')}</strong></div>
+    <!-- Cuerpo del oficio -->
+    <div style="flex: 1; margin-left: 2cm;">
+      <div style="font-weight: bold; text-decoration: underline; margin: 10px 0 15px 0; font-size: 12pt;">
+        OFICIO N°${nroOficio}-2025-COMOPPOL PNP/DIRNOS/REGPOL-CUS/DIVINCRÍ-CUS/OFICRI-DJE.ETL
       </div>
 
-      <div class="section">
-        <div class="section-title-box">ASUNTO:</div>
-        <div class="section-content-box">Remite Informe Pericial de Dosaje Etílico, por motivo que se indica.</div>
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <div style="font-weight: bold; min-width: 120px; flex-shrink: 0; text-align: right; margin-top: 15px;">SEÑOR(A):</div>
+        <div style="margin-top: 15px; flex: 1;"><strong>${dirigido.replace(/\n/g, '<br>')}</strong></div>
       </div>
 
-      <div class="section">
-        <div class="section-title-box">REF.:</div>
-        <div class="section-content-box">${referencia}</div>
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <div style="font-weight: bold; min-width: 120px; flex-shrink: 0; text-align: right; margin-top: 15px;">ASUNTO:</div>
+        <div style="margin-top: 15px; flex: 1;">Remite Informe Pericial de Dosaje Etílico, por motivo que se indica.</div>
       </div>
 
-      <div class="indent">
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <div style="font-weight: bold; min-width: 120px; flex-shrink: 0; text-align: right; margin-top: 15px;">REF.:</div>
+        <div style="margin-top: 15px; flex: 1;">${referencia}</div>
+      </div>
+
+      <div style="text-indent: 3.5cm; text-align: justify; margin-top: 15px;">
         Tengo el honor de dirigirme a Ud., con la finalidad de remitir, adjunto al presente, el 
         <strong>INFORME PERICIAL DE DOSAJE ETÍLICO N°${nroOficio}/2025</strong>, formulado por el CAP. (S) PNP Javier Alexander HUAMANI CÓRDOVA, 
         identificado con CIP N° 419397, Químico Farmacéutico CQFP N°20289, sobre el examen de dosaje etílico realizado en la muestra biológica 
         (${oficio.tipoMuestra || 'ORINA'}) proporcionada por la persona:
       </div>
 
-      <ul class="bullet-list">
-        <li><strong>${oficio.nombreCompleto || 'Nombre no especificado'}</strong></li>
+      <ul style="margin-left: 30px; padding-left: 0; margin-top: 15px;">
+        <li style="margin: 5px 0;"><strong>${oficio.nombreCompleto || 'Nombre no especificado'}</strong></li>
       </ul>
 
-      <div class="closing-text">
+      <div style="text-indent: 4cm; text-align: justify; margin-top: 15px;">
         Los documentos son remitidos en cadena de custodia. Es propicia la ocasión para reiterarle los sentimientos de mi especial consideración y deferente estima personal.
       </div>
 
-      <div class="signature-container">
-        <div class="signature-left">DFC/${auxiliar}.</div>
-        <div class="signature-right">Dios guarde a Ud.</div>
+      <div style="display: flex; justify-content: space-between; margin-top: 30px; font-size: 10pt;">
+        <div style="font-style: italic;">DFC/${auxiliar}.</div>
+        <div style="font-weight: bold;">Dios guarde a Ud.</div>
       </div>
 
-      <div class="image-box">
-        <img src="/assets/img/sello_oficio.png" onerror="this.style.display='none'">
+      <div style="width: 50%; height: 150px; float: right; margin-top: 50px; display: flex; justify-content: center; align-items: center;">
+        <img src="/assets/img/sello_oficio.png" style="max-width: 100%; max-height: 100%; object-fit: contain; border: none;" onerror="this.style.display='none'">
       </div>
     </div>
 
-    <!-- ✅ PIE DE PÁGINA PERSONALIZADO -->
-    <div class="custom-footer">
-        Calle Alcides Vigo Hurtado N°-133, distrito de Wánchaq – Cusco. Cel. N°980 121873.<br>
-          Email: oficricuscomail.com
-    </div>
+    <div class="custom-footer" style="margin-top: 100px; text-align: center; font-size: 9pt; padding: 10px 0; border-top: 1px ; background-color: white; width: 100%;">
+    <div style="margin-top: -100px; text-align: center; font-size: 9pt; padding: 10px 0; border-top: 1px solid #ccc; background-color: white; width: 100%;">
+  Calle Alcides Vigo Hurtado N°-133, distrito de Wánchaq – Cusco. Cel. N°980 121873.<br>
+  Email: oficricuscomail.com
+</div>
+
   </div>
+</div>
+`;
 
-  <script>
-    function generarPDF() {
-      const { jsPDF } = window.jspdf;
-      
-      html2canvas(document.getElementById('pdf-content'), {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true
-      }).then(canvas => {
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        const imgWidth = canvas.width;
-        const imgHeight = canvas.height;
-        const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-        const imgX = (pdfWidth - imgWidth * ratio) / 2;
-        const imgY = (pdfHeight - imgHeight * ratio) / 2;
-        
-        pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
-        pdf.save('oficio_dosaje_${nroOficio}.pdf');
-      }).catch(err => {
-        alert('❌ Error al generar el PDF. Intente nuevamente.');
-        console.error('Error:', err);
-      });
+      // 👇 Convertir HTML a PDF usando html2canvas y jsPDF
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = htmlContent;
+      tempDiv.style.position = 'absolute';
+      tempDiv.style.left = '-9999px';
+      document.body.appendChild(tempDiv);
+
+      const canvas = await html2canvas(tempDiv, { scale: 2 });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      const imgX = (pdfWidth - imgWidth * ratio) / 2;
+      const imgY = (pdfHeight - imgHeight * ratio) / 2;
+
+      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+      const pdfBlob = pdf.output('blob');
+      this.currentPdfUrl = URL.createObjectURL(pdfBlob);
+
+      // 👇 Establecer el título dinámico del modal
+      this.pdfModalTitle = `OFICIO N°${nroOficio}-2025`;
+
+      if (this.modalInstance) {
+        this.modalInstance.show();
+      }
+
+      document.body.removeChild(tempDiv);
+
+    } catch (err) {
+      console.error('Error al generar PDF:', err);
+      Swal.fire('❌ Error', 'No se pudo generar el PDF.', 'error');
     }
-  </script>
-</body>
-</html>
-    `);
-    printWindow.document.close();
-    printWindow.focus();
   }
-}
 }

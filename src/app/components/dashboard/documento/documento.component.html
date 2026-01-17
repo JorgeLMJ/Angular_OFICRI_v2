@@ -1,3 +1,4 @@
+<!-- src/app/components/dashboard/documento/documento.component.html -->
 <div class="container mt-4">
   <!-- Encabezado -->
   <div class="d-flex justify-content-between align-items-center mb-4">
@@ -27,48 +28,60 @@
   <!-- Grid de Cards -->
   <div class="row g-4">
     <div class="col-12 col-md-6 col-lg-4" *ngFor="let doc of paginatedDocumentos; trackBy: trackById">
-      <div class="card shadow-sm h-100 border-0">
-        <div class="card-header bg-light d-flex justify-content-between align-items-center">
-          <h5 class="mb-0 text-primary"> Registro: {{ doc.nro_registro }}</h5>
-          <div class="btn-group" role="group">
+      <div class="card shadow-sm h-100"> <!-- 👈 Eliminado border-0 -->
+        <div class="card-header bg-light d-flex justify-content-between align-items-start"> <!-- 👈 Cambiado a align-items-start -->
+          <div>
+            <h5 class="mb-1 text-primary">Registro: {{ doc.nro_registro }}</h5> <!-- 👈 Cambiado a mb-1 -->
+            <p class="mb-1 text-muted small">
+              <i class="bi bi-file-earmark me-1"></i> Oficio: {{ doc.nroOficio }} |
+              <i class="bi bi-person me-1"></i> {{ doc.nombres }} {{ doc.apellidos }}
+            </p>
+            <p class="mb-0">
+              <strong>Situación:</strong> {{ doc.situacion }}
+            </p>
+          </div>
+          <div class="btn-group flex-shrink-0" role="group"> <!-- 👈 Agregado flex-shrink-0 -->
             <button type="button" class="btn btn-sm btn-outline-warning" (click)="editarDocumento(doc.id!)"><i class="bi bi-pencil-square"></i></button>
-            
-            <button type="button" class="btn btn-sm btn-outline-info" (click)="vistaPrevia(doc)"><i class="bi bi-eye me-1"></i></button>
+            <button type="button" class="btn btn-sm btn-outline-info" (click)="vistaPrevia(doc)"><i class="bi bi-eye"></i></button>
           </div>
         </div>
         <div class="card-body">
           <!-- SECCIÓN 1: OFICIO (AMPLIADA) -->
-          <div class="mb-4">
-            <h6 class="text-primary mb-3"><i class="bi bi-file-earmark me-2"></i>📄 Oficio</h6>
+          <div class="mb-3"> <!-- 👈 Reducido margen -->
+            <h6 class="text-primary mb-2"><i class="bi bi-file-earmark me-2"></i>📄 Oficio</h6> <!-- 👈 Reducido margen -->
             <div class="row">
-              <div class="col-12 mb-2"><strong><i class="bi bi-hash me-2 text-primary"></i>Nombre documento:</strong><p class="mb-1">{{ doc.nombreDocumento }}</p></div>
-              <div class="col-12 mb-2"><strong><i class="bi bi-calendar-date me-2 text-primary"></i>Fecha Ingreso:</strong><p class="mb-1">{{ formatDate(doc.fechaIngreso) }}</p></div>
-              <div class="col-12 mb-2"><strong><i class="bi bi-hash me-2 text-primary"></i>N° Oficio:</strong><p class="mb-1">{{ doc.nroOficio }}</p></div>
-              <div class="col-12 mb-2"><strong><i class="bi bi-hash me-2 text-primary"></i>Nombre Oficio:</strong><p class="mb-1">{{ doc.nombreOficio }}</p></div>
-              <div class="col-12 mb-2"><strong><i class="bi bi-card-text me-2 text-primary"></i>Asunto:</strong><p class="mb-1">{{ doc.asunto }}</p></div>
-              <div class="col-12 mb-2"><strong><i class="bi bi-person me-2 text-primary"></i>Nombres:</strong><p class="mb-1">{{ doc.nombres }} {{ doc.apellidos }}</p></div>
-              <div class="col-12 mb-2"><strong><i class="bi bi-credit-card me-2 text-primary"></i>DNI:</strong><p class="mb-1">{{ doc.dni }}</p></div>
-              <div class="col-12 mb-2"><strong><i class="bi bi-info-circle me-2 text-primary"></i>Situación:</strong><p class="mb-1">{{ doc.situacion }}</p></div>
-              <div class="col-12 mb-2"><strong><i class="bi bi-exclamation-triangle me-2 text-primary"></i>Delito/Infracción:</strong><p class="mb-1">{{ doc.delitoInfraccion }}</p></div>
-              <div class="col-12 mb-2"><strong><i class="bi bi-clock me-2 text-primary"></i>Incidente:</strong><p class="mb-1">{{ formatDate(doc.fechaIncidente) }} {{ doc.horaIncidente }}</p></div>
-              <div class="col-12 mb-2"><strong><i class="bi bi-building me-2 text-primary"></i>Procedencia:</strong><p class="mb-0">{{ doc.procedencia }}</p></div>
+              <div class="col-12 mb-2"><strong><i class="bi bi-hash me-2 text-primary"></i>N° Oficio:</strong> {{ doc.nroOficio }}</div>
+              <div class="col-12 mb-2"><strong><i class="bi bi-card-text me-2 text-primary"></i>Asunto:</strong> {{ doc.asunto }}</div>
+              <div class="col-12 mb-2"><strong><i class="bi bi-building me-2 text-primary"></i>Procedencia:</strong> {{ doc.procedencia }}</div>
+              <div class="col-12 mb-2"><strong><i class="bi bi-calendar-date me-2 text-primary"></i>Fecha Ingreso:</strong> {{ formatDate(doc.fechaIngreso) }}</div>
             </div>
           </div>
 
-          <!-- SECCIÓN 2: ACTA DE TOMA DE MUESTRA (AMPLIADA) -->
-          <div>
-            <h6 class="text-primary mb-3"><i class="bi bi-droplet me-2"></i>🧪 Acta de Toma de Muestra</h6>
+          <!-- SECCIÓN 2: EXAMINADO -->
+          <div class="mb-3">
+            <h6 class="text-primary mb-2"><i class="bi bi-person me-2"></i>👤 Examinado</h6>
             <div class="row">
-              <div class="col-12 mb-2"><strong><i class="bi bi-calendar-check me-2 text-primary"></i>Fecha Acta:</strong><p class="mb-1">{{ formatDate(doc.fechaActa) || 'N/A' }}</p></div>
-              <div class="col-12 mb-2"><strong><i class="bi bi-clock-history me-2 text-primary"></i>Hora Muestra:</strong><p class="mb-1">{{ doc.horaTomaMuestra || 'N/A' }}</p></div>
-              <div class="col-12 mb-2"><strong><i class="bi bi-droplet me-2 text-primary"></i>Tipo Muestra:</strong><p class="mb-1">{{ doc.tipoMuestra || 'N/A' }}</p></div>
-              <div class="col-12 mb-2"><strong><i class="bi bi-person-vcard me-2 text-primary"></i>Conduce:</strong><p class="mb-1">{{ doc.personaQueConduce || 'N/A' }}</p></div>
-              <div class="col-12 mb-2"><strong><i class="bi bi-check-circle me-2 text-primary"></i>Cualitativo:</strong><p class="mb-1">{{ doc.cualitativo || 'N/A' }}</p></div>
-              
+              <div class="col-12 mb-2"><strong><i class="bi bi-person me-2 text-primary"></i>Nombre:</strong> {{ doc.nombres }} {{ doc.apellidos }}</div>
+              <div class="col-12 mb-2"><strong><i class="bi bi-credit-card me-2 text-primary"></i>DNI:</strong> {{ doc.dni }}</div>
+              <div class="col-12 mb-2"><strong><i class="bi bi-exclamation-triangle me-2 text-primary"></i>Delito/Infracción:</strong> {{ doc.delitoInfraccion }}</div>
+            </div>
           </div>
+
+          <!-- SECCIÓN 3: ACTA DE TOMA DE MUESTRA -->
+          <div class="mb-3">
+            <h6 class="text-primary mb-2"><i class="bi bi-droplet me-2"></i>🧪 Acta de Toma de Muestra</h6>
+            <div class="row">
+              <div class="col-12 mb-2"><strong><i class="bi bi-calendar-check me-2 text-primary"></i>Fecha Acta:</strong> {{ formatDate(doc.fechaActa) || 'N/A' }}</div>
+              <div class="col-12 mb-2"><strong><i class="bi bi-clock-history me-2 text-primary"></i>Hora Muestra:</strong> {{ doc.horaTomaMuestra || 'N/A' }}</div>
+              <div class="col-12 mb-2"><strong><i class="bi bi-droplet me-2 text-primary"></i>Tipo Muestra:</strong> {{ doc.tipoMuestra || 'N/A' }}</div>
+              <div class="col-12 mb-2"><strong><i class="bi bi-person-vcard me-2 text-primary"></i>Conduce:</strong> {{ doc.personaQueConduce || 'N/A' }}</div>
+            </div>
+          </div>
+
+          <!-- ANEXOS -->
           <div *ngIf="getAnexosSeleccionados(doc.anexos) as listaAnexos">
             <div *ngIf="listaAnexos.length > 0">
-              <h6 class="text-primary mb-3"><i class="bi bi-paperclip me-2"></i>📎 Anexos</h6>
+              <h6 class="text-primary mb-2"><i class="bi bi-paperclip me-2"></i>📎 Anexos</h6>
               <div class="d-flex flex-wrap gap-1">
                 <span *ngFor="let anexo of listaAnexos" class="badge bg-secondary fw-normal">
                   {{ anexo }}
@@ -80,7 +93,6 @@
       </div>
     </div>
   </div>
-  
   
   <!-- Sin resultados -->
   <div class="text-center py-5" *ngIf="filteredDocumentos.length === 0">
@@ -97,5 +109,27 @@
         <li class="page-item" [class.disabled]="currentPage === totalPages"><button class="page-link" (click)="nextPage()">Siguiente</button></li>
       </ul>
     </nav>
+  </div>
+</div>
+
+<!-- Modal para visualizar el PDF -->
+<div class="modal fade" id="pdfModal" #pdfModal tabindex="-1" aria-labelledby="pdfModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <!-- 👇 CABECERA REDUCIDA Y TÍTULO DINÁMICO -->
+      <div class="modal-header bg-primary text-white" style="padding: 0.25rem 0.75rem; min-height: 2.25rem;">
+        <h5 class="modal-title" id="pdfModalLabel">{{ pdfModalTitle }}</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-0" style="height: 100vh; overflow: hidden;">
+        <iframe *ngIf="currentPdfUrl" 
+                [src]="currentPdfUrl | safeUrl" 
+                width="100%" 
+                height="100%" 
+                frameborder="0"
+                style="border: none; background: #fff; overflow: hidden;">
+        </iframe>
+      </div>
+    </div>
   </div>
 </div>

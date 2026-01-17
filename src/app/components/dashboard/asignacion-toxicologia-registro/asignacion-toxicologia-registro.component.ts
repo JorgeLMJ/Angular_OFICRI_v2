@@ -25,14 +25,17 @@ export class AsignacionToxicologiaRegistroComponent implements OnInit, AfterView
   editMode = false;
   currentId: number | null = null;
   currentUserRole: string = '';
+
   @ViewChild('documentoModal') documentoModalEl!: ElementRef;
   @ViewChild('empleadoModal') empleadoModalEl!: ElementRef;
   private documentoModal: Modal | null = null;
   private empleadoModal: Modal | null = null;
+
   documentos: Documento[] = [];
   documentosFiltrados: Documento[] = [];
   empleados: EmpleadoDTO[] = [];
   empleadosFiltrados: EmpleadoDTO[] = [];
+
   terminoBusquedaDocumento: string = '';
   terminoBusquedaEmpleado: string = '';
   documentoSeleccionadoInfo: string = '';
@@ -89,6 +92,21 @@ export class AsignacionToxicologiaRegistroComponent implements OnInit, AfterView
     });
   }
 
+  // ✅ NUEVO: getter para saber si puede completar
+  get puedeCompletar(): boolean {
+    return this.currentUserRole === 'Quimico Farmaceutico';
+  }
+
+  // ✅ MODIFICADO: lógica de selección de entidades
+  puedeSeleccionarEntidades(): boolean {
+    // Si es Auxiliar de Toxicologia o Administrador → siempre puede seleccionar (incluso en edición)
+    if (['Auxiliar de Toxicologia', 'Administrador'].includes(this.currentUserRole)) {
+      return true;
+    }
+    // Si es Quimico Farmaceutico → solo puede seleccionar en modo creación
+    return !this.editMode;
+  }
+
   ngAfterViewInit(): void {
     setTimeout(() => {
       if (this.documentoModalEl?.nativeElement) {
@@ -107,7 +125,7 @@ export class AsignacionToxicologiaRegistroComponent implements OnInit, AfterView
         (doc.nombreDocumento || '').toLowerCase().includes('informe pericial de toxicología')
       );
       this.documentosFiltrados = [...this.documentos];
-      this.aplicarFiltroYOrden(); // ✅ Ordenar inicialmente
+      this.aplicarFiltroYOrden();
     });
 
     this.empleadoService.getAll().subscribe(data => {
@@ -164,10 +182,6 @@ export class AsignacionToxicologiaRegistroComponent implements OnInit, AfterView
     });
   }
 
-  puedeSeleccionarEntidades(): boolean {
-    return !this.editMode;
-  }
-
   openDocumentoModal() {
     this.currentPageDocumentos = 1;
     this.aplicarFiltroYOrden();
@@ -204,12 +218,8 @@ export class AsignacionToxicologiaRegistroComponent implements OnInit, AfterView
   }
 
   aplicarFiltroYOrden() {
-    // ✅ NO FILTRAR: mostrar siempre todos los documentos
     let filtrados = [...this.documentosFiltrados];
-
-    // ✅ Ordenar por ID descendente (más reciente primero)
     filtrados.sort((a, b) => (b.id || 0) - (a.id || 0));
-
     this.documentosFiltrados = filtrados;
   }
 
@@ -225,8 +235,6 @@ export class AsignacionToxicologiaRegistroComponent implements OnInit, AfterView
   goToPageDocumentos(page: number) {
     this.currentPageDocumentos = Math.min(Math.max(1, page), this.totalPagesDocumentos);
   }
-
-  // ✂️ ELIMINADO: toggleMostrarAsignados
 
   filtrarEmpleados() {
     const term = this.terminoBusquedaEmpleado.toLowerCase();

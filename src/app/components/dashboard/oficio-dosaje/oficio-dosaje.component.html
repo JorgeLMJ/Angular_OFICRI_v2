@@ -33,13 +33,19 @@
       class="col-12 col-md-6 col-lg-4"
       *ngFor="let oficio of paginatedOficios"
     >
-      <div class="card shadow-sm h-100 border-0">
-        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+      <div class="card shadow-sm h-100"> <!-- 👈 Eliminado border-0 -->
+        <div class="card-header bg-light d-flex justify-content-between align-items-start"> <!-- 👈 align-items-start -->
           <div>
-            <h5 class="mb-0 text-primary">Oficio #{{ oficio.id }}</h5>
-            <small class="text-muted">Doc: {{ oficio.documentoId }}</small>
+            <h5 class="mb-1 text-primary">Oficio #{{ oficio.id }}</h5> <!-- 👈 mb-1 -->
+            <p class="mb-1 text-muted small">
+              <i class="bi bi-file-earmark me-1"></i> Doc: {{ oficio.documentoId }} |
+              <i class="bi bi-person me-1"></i> {{ oficio.nombreCompleto }}
+            </p>
+            <p class="mb-0">
+              <strong>N° Informe:</strong> {{ oficio.nroInforme }}
+            </p>
           </div>
-          <div class="btn-group" role="group">
+          <div class="btn-group flex-shrink-0" role="group"> <!-- 👈 flex-shrink-0 -->
             <button
               type="button"
               class="btn btn-sm btn-outline-primary"
@@ -58,28 +64,19 @@
         </div>
         <div class="card-body">
           <div class="mb-3">
-            <h6 class="text-secondary">Nombre del Oficio</h6>
+            <h6 class="text-secondary mb-2">Nombre del Oficio</h6>
             <p class="mb-0">{{ oficio.nombreOficio }}</p> 
           </div>
           <div class="mb-3">
-            <h6 class="text-secondary">Dirigido a</h6>
-            <!-- ✅ Mostrar con saltos de línea reales -->
+            <h6 class="text-secondary mb-2">Dirigido a</h6>
             <p class="mb-0" [innerHTML]="formatMultiline(oficio.dirigido)"></p>
           </div>
           <div class="mb-3">
-            <h6 class="text-secondary">Número de Informe</h6>
-            <p class="mb-0">{{ oficio.nroInforme }}</p>
-          </div>
-          <div class="mb-3">
-            <h6 class="text-secondary">Tipo de Muestra</h6>
+            <h6 class="text-secondary mb-2">Tipo de Muestra</h6>
             <span class="badge bg-info">{{ oficio.tipoMuestra }}</span>
           </div>
           <div class="mb-3">
-            <h6 class="text-secondary">Nombre Completo</h6>
-            <p class="mb-0">{{ oficio.nombreCompleto }}</p>
-          </div>
-          <div class="mb-3">
-            <h6 class="text-secondary">Auxiliar</h6>
+            <h6 class="text-secondary mb-2">Auxiliar</h6>
             <p class="mb-0">{{ oficio.auxiliar }}</p>
           </div>
         </div>
@@ -112,4 +109,22 @@
       </li>
     </ul>
   </nav>
+</div>
+
+<!-- 👇 NUEVO: Modal para visualizar el PDF (sin loading) -->
+<div class="modal fade" id="pdfModal" #pdfModal tabindex="-1" aria-labelledby="pdfModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white" style="padding: 0.25rem 0.75rem; min-height: 2.25rem;">
+        <h5 class="modal-title" id="pdfModalLabel">{{ pdfModalTitle }}</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-0" style="height: 100vh; overflow: hidden;">
+        <!-- Iframe del PDF (sin loading) -->
+        <iframe *ngIf="currentPdfUrl" [src]="currentPdfUrl | safeUrl" width="100%" height="100%" frameborder="0"
+          style="border: none; background: #fff; overflow: hidden;">
+        </iframe>
+      </div>
+    </div>
+  </div>
 </div>

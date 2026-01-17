@@ -1,4 +1,5 @@
 // src/app/components/dashboard/asignacion-dosaje-registro/asignacion-dosaje-registro.component.ts
+
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -34,9 +35,6 @@ export class AsignacionDosajeRegistroComponent implements OnInit {
   terminoBusquedaEmpleado: string = '';
   empleadoSeleccionadoNombre: string = '';
 
-  esRolLimitado: boolean = false;
-  puedeEditarEstado: boolean = false;
-
   constructor(
     private fb: FormBuilder,
     private router: Router,
@@ -50,9 +48,6 @@ export class AsignacionDosajeRegistroComponent implements OnInit {
   ngOnInit(): void {
     const user = this.authService.getCurrentUser();
     this.currentUserRole = user?.rol || '';
-
-    this.esRolLimitado = ['Auxiliar de Toxicologia'].includes(this.currentUserRole);
-    this.puedeEditarEstado = ['Administrador', 'Auxiliar de Dosaje', 'Quimico Farmaceutico'].includes(this.currentUserRole);
 
     this.asignacionForm = this.fb.group({
       id: [null],
@@ -155,10 +150,10 @@ export class AsignacionDosajeRegistroComponent implements OnInit {
     return this.documentosAsignados.includes(documentoId);
   }
 
-  seleccionarDocumento(documento: Documento): void {
-    if (this.esRolLimitado || this.isDocumentoAsignado(documento.id!)) return;
-    this.asignacionForm.patchValue({ documentoId: documento.id });
-    this.documentoSeleccionadoOficio = documento.nroOficio;
+  // ✅ MODIFICADO: ya no se usa "esRolLimitado"
+  puedeSeleccionarEntidades(): boolean {
+    // ❌ Quimico Farmaceutico NO puede seleccionar NUNCA
+    return this.currentUserRole !== 'Quimico Farmaceutico';
   }
 
   filtrarEmpleados(): void {
@@ -170,8 +165,16 @@ export class AsignacionDosajeRegistroComponent implements OnInit {
     );
   }
 
+  seleccionarDocumento(documento: Documento): void {
+    // ❌ Bloquear si es Quimico Farmaceutico
+    if (!this.puedeSeleccionarEntidades() || this.isDocumentoAsignado(documento.id!)) return;
+    this.asignacionForm.patchValue({ documentoId: documento.id });
+    this.documentoSeleccionadoOficio = documento.nroOficio;
+  }
+
   seleccionarEmpleado(empleado: EmpleadoDTO): void {
-    if (this.esRolLimitado) return;
+    // ❌ Bloquear si es Quimico Farmaceutico
+    if (!this.puedeSeleccionarEntidades()) return;
     this.asignacionForm.patchValue({ empleadoId: empleado.id });
     this.empleadoSeleccionadoNombre = `${empleado.nombre} ${empleado.apellido}`;
   }
@@ -181,18 +184,13 @@ export class AsignacionDosajeRegistroComponent implements OnInit {
   }
 
   puedeEditarEstadoCampo(): boolean {
-    return this.puedeEditarEstado;
-  }
-
-  puedeSeleccionarEntidades(): boolean {
-    return !this.esRolLimitado;
+    return ['Administrador', 'Auxiliar de Dosaje', 'Quimico Farmaceutico'].includes(this.currentUserRole);
   }
 
   onSubmit(): void {
     if (this.asignacionForm.valid) {
       const formValue = this.asignacionForm.getRawValue();
       
-      // ✅ Añadir el emisorId (usuario actual) al payload
       const currentUser = this.authService.getCurrentUser();
       const dto = {
         ...formValue,
@@ -205,8 +203,6 @@ export class AsignacionDosajeRegistroComponent implements OnInit {
 
       req$.subscribe({
         next: (savedAsignacion) => {
-          // ✅ ELIMINADO: No enviar notificación desde Angular
-          // La notificación la genera el backend si estado = "COMPLETADO"
           this.router.navigate(['/dashboard/asignaciones-dosaje']);
         },
         error: (err: any) => {

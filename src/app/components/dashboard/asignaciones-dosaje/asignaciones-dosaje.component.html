@@ -1,5 +1,4 @@
 <!-- src/app/components/dashboard/asignaciones-dosaje/asignaciones-dosaje.component.html -->
-
 <div class="container mt-4">
   <!-- Encabezado -->
   <div class="d-flex justify-content-between align-items-center mb-4">
@@ -25,52 +24,53 @@
     </div>
   </div>
 
-  <!-- 📋 Grid de cards -->
+  <!-- 📋 Grid de cards (formato idéntico a toxicología) -->
   <div class="row g-4">
     <div class="col-12 col-md-6 col-lg-4" *ngFor="let asignacion of paginatedAsignaciones">
-      <div class="card shadow-sm h-100 border-0">
-        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-light d-flex justify-content-between align-items-start">
           <div>
-            <h5 class="mb-0 text-primary">Dosaje #{{ asignacion.id }}</h5>
-            <small class="text-muted">
-              Doc: {{ asignacion.documentoId }} | 
-              Emp: {{
-                empleadosMap.has(asignacion.empleadoId!)
-                  ? empleadosMap.get(asignacion.empleadoId!)!.nombre + ' ' + empleadosMap.get(asignacion.empleadoId!)!.apellido
-                  : asignacion.empleadoId
-              }}
-            </small>
+            <h5 class="mb-1 text-primary">Dosaje #{{ asignacion.id }}</h5>
+            <p class="mb-1 text-muted small">
+              <i class="bi bi-file-earmark me-1"></i> Doc: {{ asignacion.documentoId }} |
+              <i class="bi bi-person me-1"></i> Emp: 
+              <span *ngIf="empleadosMap.has(asignacion.empleadoId!)">
+                {{ empleadosMap.get(asignacion.empleadoId!)?.nombre }} {{ empleadosMap.get(asignacion.empleadoId!)?.apellido }}
+              </span>
+              <span *ngIf="!empleadosMap.has(asignacion.empleadoId!)">
+                {{ asignacion.empleadoId }}
+              </span>
+            </p>
+            <p class="mb-0">
+              <strong>Área:</strong> {{ asignacion.area }}
+            </p>
           </div>
-          <div class="btn-group" role="group">
-            <button type="button" class="btn btn-sm btn-outline-primary" (click)="editarAsignacion(asignacion.id!)">
+          <div class="btn-group flex-shrink-0" role="group">
+            <button class="btn btn-sm btn-outline-primary" (click)="editarAsignacion(asignacion.id!)">
               <i class="bi bi-pencil-square"></i>
             </button>
-            <!-- ✅ Botón de vista previa: ahora pasa toda la asignación -->
-            <button type="button" class="btn btn-sm btn-outline-info" (click)="vistaPreviaAsignacion(asignacion)">
+            <button class="btn btn-sm btn-outline-info" (click)="vistaPreviaAsignacion(asignacion)">
               <i class="bi bi-eye"></i>
             </button>
-           
           </div>
         </div>
+
         <div class="card-body">
-          <div class="mb-3">
-            <h6 class="text-secondary">Área</h6>
-            <p class="mb-0">{{ asignacion.area }}</p>
-          </div>
-          <div class="mb-3">
-            <h6 class="text-secondary">Resultado Cualitativo</h6>
-            <p class="mb-0">{{ asignacion.cualitativo ? asignacion.cualitativo : 'Sin resultado' }}</p>
-          </div>
-          <div class="mb-3">
-            <h6 class="text-secondary">Estado</h6>
+          <p><strong>Estado:</strong> 
             <span class="badge" [ngClass]="{
               'bg-warning': asignacion.estado === 'EN_PROCESO',
-              'bg-success': asignacion.estado === 'COMPLETADO',
-              'bg-secondary': !asignacion.estado
-            }">
-              {{ asignacion.estado || 'Sin estado' }}
-            </span>
-          </div>
+              'bg-success': asignacion.estado === 'COMPLETADO'
+            }">{{ asignacion.estado }}</span>
+          </p>
+          <h6>Resultado Cualitativo:</h6>
+          <ul class="list-group list-group-flush small">
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span>Cualitativo</span>
+              <span class="badge bg-primary rounded-pill px-3 py-2 fw-bold">
+  {{ asignacion.cualitativo ? (asignacion.cualitativo + ' g/l') : 'Sin resultado' }}
+</span>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
@@ -102,5 +102,23 @@
         </li>
       </ul>
     </nav>
+  </div>
+</div>
+
+<!-- 👇 NUEVO: Modal para visualizar el PDF -->
+<div class="modal fade" id="pdfModal" #pdfModal tabindex="-1" aria-labelledby="pdfModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white" style="padding: 0.25rem 0.75rem; min-height: 2.25rem;">
+        <h5 class="modal-title" id="pdfModalLabel">{{ pdfModalTitle }}</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-0" style="height: 100vh; overflow: hidden;">
+        <!-- Iframe del PDF (sin loading) -->
+        <iframe *ngIf="currentPdfUrl" [src]="currentPdfUrl | safeUrl" width="100%" height="100%" frameborder="0"
+          style="border: none; background: #fff; overflow: hidden;">
+        </iframe>
+      </div>
+    </div>
   </div>
 </div>
