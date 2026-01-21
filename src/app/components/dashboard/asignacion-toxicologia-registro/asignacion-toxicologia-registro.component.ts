@@ -94,8 +94,8 @@ export class AsignacionToxicologiaRegistroComponent implements OnInit, AfterView
 
   // ✅ NUEVO: getter para saber si puede completar
   get puedeCompletar(): boolean {
-    return this.currentUserRole === 'Quimico Farmaceutico';
-  }
+  return this.currentUserRole === 'Quimico Farmaceutico' || this.currentUserRole === 'Administrador';
+}
 
   // ✅ MODIFICADO: lógica de selección de entidades
   puedeSeleccionarEntidades(): boolean {

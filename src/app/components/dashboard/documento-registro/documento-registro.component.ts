@@ -272,4 +272,21 @@ export class DocumentoRegistroComponent implements OnInit {
     }
     return '';
   }
+  // Formatea fecha para la vista previa (ej: 18ENE2026)
+formatDatePreview(dateTime: string): string {
+  if (!dateTime) return '____________';
+  const d = new Date(dateTime);
+  if (isNaN(d.getTime())) return 'FECHA INVALIDA';
+  const dia = d.getDate().toString().padStart(2, '0');
+  const mes = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SET','OCT','NOV','DIC'][d.getMonth()];
+  const anio = d.getFullYear();
+  return `${dia}${mes}${anio}`;
+}
+
+// Extrae solo la hora de datetime-local
+parseTime(dateTime: string): string {
+  if (!dateTime) return '';
+  const parts = dateTime.split('T');
+  return parts[1] ? parts[1].substring(0, 5) : '';
+}
 }

@@ -18,6 +18,7 @@ import { AsignacionToxicologiaRegistroComponent } from './components/dashboard/a
 import { OficioDosajeComponent } from './components/dashboard/oficio-dosaje/oficio-dosaje.component';
 import { OficioDosajeRegistroComponent } from './components/dashboard/oficio-dosaje-registro/oficio-dosaje-registro.component';
 import { ReportesComponent } from './components/dashboard/reportes/reportes.component';
+import { AuditoriaComponent } from './components/dashboard/auditoria/auditoria.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -51,7 +52,11 @@ export const routes: Routes = [
       { 
         path: 'notificaciones', 
         loadComponent: () => import('./components/dashboard/notificaciones/notificaciones.component').then(m => m.NotificacionesComponent) 
-      }
+      },
+    { 
+      path: 'auditoria', 
+      loadComponent: () => import('./components/dashboard/auditoria/auditoria.component').then(m => m.AuditoriaComponent) 
+    }
     ]
   },
   { path: '**', redirectTo: '/login' }

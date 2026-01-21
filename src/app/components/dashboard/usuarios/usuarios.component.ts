@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { FormsModule } from '@angular/forms'; // 🔑 Para [(ngModel)]
+import { FormsModule } from '@angular/forms';
 import { Usuario } from '../../../models/usuario.model';
 import { UsuarioService } from '../../../services/usuario.service';
 import Swal from 'sweetalert2';
@@ -22,7 +22,6 @@ export class UsuariosComponent implements OnInit {
 
   terminoBusqueda: string = '';
 
-  // 📄 Paginación
   paginaActual: number = 1;
   registrosPorPagina: number = 5;
   totalPaginas: number = 1;
@@ -36,14 +35,12 @@ export class UsuariosComponent implements OnInit {
     this.usuarioForm = this.fb.group({
       nombre: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      password: [''], // no obligatorio en edición
+      password: [''],
       rol: ['', Validators.required]
     });
-
     this.cargarUsuarios();
   }
 
-  // 🚀 Cargar usuarios
   cargarUsuarios(): void {
     this.usuarioService.getUsuarios().subscribe({
       next: (data) => {
@@ -55,7 +52,6 @@ export class UsuariosComponent implements OnInit {
     });
   }
 
-  // 🔎 Filtrar usuarios
   filtrarUsuarios(): void {
     const termino = this.terminoBusqueda.toLowerCase();
     this.usuariosFiltrados = this.usuarios.filter(usuario =>
@@ -67,7 +63,6 @@ export class UsuariosComponent implements OnInit {
     this.actualizarPaginacion();
   }
 
-  // 📄 Actualizar paginación
   actualizarPaginacion(): void {
     this.totalPaginas = Math.ceil(this.usuariosFiltrados.length / this.registrosPorPagina);
     const inicio = (this.paginaActual - 1) * this.registrosPorPagina;
@@ -89,15 +84,37 @@ export class UsuariosComponent implements OnInit {
     }
   }
 
-  // ======================
-  // 🚀 CRUD USUARIOS
-  // ======================
+  irAPagina(num: number): void {
+    this.paginaActual = num;
+    this.actualizarPaginacion();
+  }
+
+  // Genera las páginas visibles (máx. 5, centradas)
+  getPaginasVisibles(): number[] {
+    const paginas: number[] = [];
+    const maxVisible = 5;
+    let start = Math.max(1, this.paginaActual - Math.floor(maxVisible / 2));
+    let end = start + maxVisible - 1;
+
+    if (end > this.totalPaginas) {
+      end = this.totalPaginas;
+      start = Math.max(1, end - maxVisible + 1);
+    }
+
+    for (let i = start; i <= end; i++) {
+      paginas.push(i);
+    }
+    return paginas;
+  }
 
   nuevoUsuario(): void {
     this.usuarioSeleccionado = null;
     this.usuarioForm.reset();
-    const modal = new (window as any).bootstrap.Modal(document.getElementById('usuarioModal'));
-    modal.show();
+    const modalEl = document.getElementById('usuarioModal');
+    if (modalEl) {
+      const modal = new (window as any).bootstrap.Modal(modalEl);
+      modal.show();
+    }
   }
 
   editarUsuario(usuario: Usuario): void {
@@ -107,9 +124,12 @@ export class UsuariosComponent implements OnInit {
       email: usuario.email,
       rol: usuario.rol
     });
-    this.usuarioForm.get('password')?.setValue(''); // limpiar contraseña
-    const modal = new (window as any).bootstrap.Modal(document.getElementById('usuarioModal'));
-    modal.show();
+    this.usuarioForm.get('password')?.setValue('');
+    const modalEl = document.getElementById('usuarioModal');
+    if (modalEl) {
+      const modal = new (window as any).bootstrap.Modal(modalEl);
+      modal.show();
+    }
   }
 
   guardarUsuario(): void {
@@ -119,31 +139,35 @@ export class UsuariosComponent implements OnInit {
         id: this.usuarioSeleccionado?.id,
         nombre: formValue.nombre,
         email: formValue.email,
-        password: formValue.password ? formValue.password : undefined, // si está vacío, no actualizar
+        password: formValue.password || undefined,
         rol: formValue.rol
       };
 
       if (this.usuarioSeleccionado) {
-        // 🚀 Modo actualización
         this.usuarioService.actualizarUsuario(usuario.id!, usuario).subscribe({
           next: () => {
             Swal.fire('✏️ Actualizado', 'Usuario actualizado correctamente', 'success');
             this.cargarUsuarios();
-            const modal = (window as any).bootstrap.Modal.getInstance(document.getElementById('usuarioModal'));
-            modal.hide();
+            const modalEl = document.getElementById('usuarioModal');
+            if (modalEl) {
+              const modal = (window as any).bootstrap.Modal.getInstance(modalEl);
+              modal?.hide();
+            }
           },
-          error: () => Swal.fire('❌ Error', 'No se pudo actualizar el usuario porque el', 'error')
+          error: () => Swal.fire('❌ Error', 'No se pudo actualizar el usuario', 'error')
         });
       } else {
-        // 🚀 Modo creación
         this.usuarioService.crearUsuario(usuario).subscribe({
           next: () => {
             Swal.fire('✅ Creado', 'Usuario creado correctamente', 'success');
             this.cargarUsuarios();
-            const modal = (window as any).bootstrap.Modal.getInstance(document.getElementById('usuarioModal'));
-            modal.hide();
+            const modalEl = document.getElementById('usuarioModal');
+            if (modalEl) {
+              const modal = (window as any).bootstrap.Modal.getInstance(modalEl);
+              modal?.hide();
+            }
           },
-          error: () => Swal.fire('❌ Error', 'No se pudo crear el usuario porque el correo ya fue registrado', 'error')
+          error: () => Swal.fire('❌ Error', 'El correo ya está registrado', 'error')
         });
       }
     }
@@ -165,7 +189,7 @@ export class UsuariosComponent implements OnInit {
             this.filtrarUsuarios();
             Swal.fire('✅ Eliminado', 'El usuario ha sido eliminado', 'success');
           },
-          error: () => Swal.fire('❌ Error', 'No se pudo eliminar el usuario porque esta relacionado con un empleado', 'error')
+          error: () => Swal.fire('❌ Error', 'No se pudo eliminar: está relacionado con un empleado', 'error')
         });
       }
     });

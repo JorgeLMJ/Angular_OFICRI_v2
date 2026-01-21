@@ -149,313 +149,280 @@ export class AsignacionesToxicologiaComponent implements OnInit, AfterViewInit, 
     });
   }
 
-  // 👇 MODIFICADO: Ahora genera un PDF y lo muestra en un modal
   async vistaPrevia(asignacion: AsignacionToxicologia): Promise<void> {
-    const documentoId = asignacion.documentoId;
-    if (!documentoId) {
-      Swal.fire('⚠️ Advertencia', 'Esta asignación no tiene documento asociado', 'warning');
-      return;
-    }
+  const documentoId = asignacion.documentoId;
+  if (!documentoId) {
+    Swal.fire('⚠️ Advertencia', 'Esta asignación no tiene documento asociado', 'warning');
+    return;
+  }
 
-    try {
-      const doc = await this.documentoService.getDocumentoById(documentoId).toPromise();
-      if (!doc) throw new Error('Documento no encontrado');
+  try {
+    const doc = await this.documentoService.getDocumentoById(documentoId).toPromise();
+    if (!doc) throw new Error('Documento no encontrado');
 
-      const formatFechaInforme = (fecha: string): string => {
-        if (!fecha) return '____________';
-        const d = new Date(`${fecha}T00:00:00`);
-        if (isNaN(d.getTime())) return 'FECHA INVALIDA';
-        const dia = d.getDate().toString().padStart(2, '0');
-        const mes = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SET','OCT','NOV','DIC'][d.getMonth()];
-        const anio = d.getFullYear();
-        return `${dia}${mes}${anio}`;
-      };
+    const formatFechaInforme = (fecha: string): string => {
+      if (!fecha) return '____________';
+      const d = new Date(`${fecha}T00:00:00`);
+      if (isNaN(d.getTime())) return 'FECHA INVALIDA';
+      const dia = d.getDate().toString().padStart(2, '0');
+      const mes = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SET','OCT','NOV','DIC'][d.getMonth()];
+      const anio = d.getFullYear();
+      return `${dia}${mes}${anio}`;
+    };
 
-      const listaAnexos = this.getAnexosSeleccionados(doc.anexos);
-      const anexosHtml = listaAnexos.length > 0
-        ? listaAnexos.map(nombre => `<p style="margin: 2px 0;">- ${nombre}</p>`).join('')
-        : '<p>No se especificaron anexos.</p>';
+    const listaAnexos = this.getAnexosSeleccionados(doc.anexos);
+    const anexosHtml = listaAnexos.length > 0
+      ? listaAnexos.map(nombre => `<p style="margin: 2pt 0; font-size: 9pt;">- ${nombre}</p>`).join('')
+      : '<p style="font-size: 9pt;">No se especificaron anexos.</p>';
 
-      const currentUser = this.authService.getCurrentUser();
-      const userRole = currentUser?.rol || '';
-      const nombreUsuarioActual = currentUser?.nombre || 'Usuario del Sistema';
-      const fechaIncidente = formatFechaInforme(doc.fechaIncidente);
-      const fechaTomaMuestra = formatFechaInforme(doc.fechaActa || doc.fechaIncidente);
-      const hoy = new Date();
-      const diaHoy = hoy.getDate();
-      const mesHoy = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','setiembre','octubre','noviembre','diciembre'][hoy.getMonth()];
-      const anioHoy = hoy.getFullYear();
+    const currentUser = this.authService.getCurrentUser();
+    const userRole = currentUser?.rol || '';
+    const nombreUsuarioActual = currentUser?.nombre || 'Usuario del Sistema';
+    const fechaIncidente = formatFechaInforme(doc.fechaIncidente);
+    const fechaTomaMuestra = formatFechaInforme(doc.fechaActa || doc.fechaIncidente);
+    const hoy = new Date();
+    const diaHoy = hoy.getDate();
+    const mesHoy = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','setiembre','octubre','noviembre','diciembre'][hoy.getMonth()];
+    const anioHoy = hoy.getFullYear();
 
-      let tituloInforme = 'INFORME PERICIAL TOXICOLÓGICO';
-      let rutaFirma = '/assets/img/firma_informe_toxicologico.png';
-      let tablaHtml = '';
+    let tituloInforme = 'INFORME PERICIAL TOXICOLÓGICO';
+    let rutaFirma = '/assets/img/firma_informe_toxicologico.png';
+    let tablaHtml = '';
 
-      if (asignacion.resultados) {
-        const clavesSeleccionadas = Object.entries(asignacion.resultados)
-          .filter(([clave, valor]) => valor !== undefined && valor !== null)
-          .map(([clave, valor]) => ({ clave, valor: valor as string }));
+    if (asignacion.resultados) {
+      const clavesSeleccionadas = Object.entries(asignacion.resultados)
+        .filter(([clave, valor]) => valor !== undefined && valor !== null)
+        .map(([clave, valor]) => ({ clave, valor: valor as string }));
 
-        if (clavesSeleccionadas.length > 0) {
-          const nombreDroga = (clave: string): string => {
-            const nombres: Record<string, string> = {
-              'cocaina': 'Cocaína',
-              'marihuana': 'Marihuana',
-              'benzodiacepinas': 'Benzodiacepinas',
-              'barbituricos': 'Barbitúricos',
-              'carbamatos': 'Carbamatos',
-              'estricnina': 'Estricnina',
-              'cumarinas': 'Cumarinas',
-              'organofosforados': 'Organofosforados',
-              'misoprostol': 'Misoprostol',
-              'piretrinas': 'Piretrinas'
-            };
-            return nombres[clave] || clave.charAt(0).toUpperCase() + clave.slice(1);
+      if (clavesSeleccionadas.length > 0) {
+        const nombreDroga = (clave: string): string => {
+          const nombres: Record<string, string> = {
+            'cocaina': 'Cocaína',
+            'marihuana': 'Marihuana',
+            'benzodiacepinas': 'Benzodiacepinas',
+            'barbituricos': 'Barbitúricos',
+            'carbamatos': 'Carbamatos',
+            'estricnina': 'Estricnina',
+            'cumarinas': 'Cumarinas',
+            'organofosforados': 'Organofosforados',
+            'misoprostol': 'Misoprostol',
+            'piretrinas': 'Piretrinas'
           };
+          return nombres[clave] || clave.charAt(0).toUpperCase() + clave.slice(1);
+        };
 
-          const resultadosMostrables = clavesSeleccionadas.map(item => ({
-            nombre: nombreDroga(item.clave),
-            resultado: item.valor
-          }));
+        const resultadosMostrables = clavesSeleccionadas.map(item => ({
+          nombre: nombreDroga(item.clave),
+          resultado: item.valor
+        }));
 
-          if (resultadosMostrables.length <= 6) {
-            tablaHtml = `
-<table class="results-table" style="width: 45%; margin: 10px auto; border-collapse: collapse; text-align: left;">
+        // ✅ TABLA EN 2 COLUMNAS (max 5 elementos por columna)
+        const maxPorColumna = 5;
+        const total = resultadosMostrables.length;
+        const numColumnas = Math.ceil(total / maxPorColumna);
+
+        if (numColumnas === 1) {
+          // Solo una columna si <=5
+          tablaHtml = `
+<table class="results-table" style="width: 80%; margin: 10pt auto; border-collapse: collapse; text-align: left; font-size: 9pt;">
 <thead>
 <tr>
-<th style="border: 1px solid #000; padding: 2px; background-color: #f2f2f2; font-weight: bold;">EXAMEN</th>
-<th style="border: 1px solid #000; padding: 2px; background-color: #f2f2f2; font-weight: bold;">RESULTADO DEL ANALISIS</th>
+<th style="border: 1px solid #000; padding: 3pt; background-color: #f2f2f2; font-weight: bold; width: 60%;">EXAMEN</th>
+<th style="border: 1px solid #000; padding: 3pt; background-color: #f2f2f2; font-weight: bold; width: 40%;">RESULTADO DEL ANALISIS</th>
 </tr>
 </thead>
 <tbody>
 ${resultadosMostrables.map(r => `
 <tr>
-<td style="border: 1px solid #000; padding: 2px;">${r.nombre}</td>
-<td style="border: 1px solid #000; padding: 2px;">${r.resultado}</td>
+<td style="border: 1px solid #000; padding: 3pt;">${r.nombre}</td>
+<td style="border: 1px solid #000; padding: 3pt; font-weight: bold; text-align: center;">${r.resultado}</td>
 </tr>
 `).join('')}
 </tbody>
 </table>
 `;
-          } else {
-            const mitad = Math.ceil(resultadosMostrables.length / 2);
-            const izquierda = resultadosMostrables.slice(0, mitad);
-            const derecha = resultadosMostrables.slice(mitad);
-            tablaHtml = `
-<div style="display: flex; justify-content: space-between; width: 90%;">
-<div style="width: 48%;">
-<table class="results-table" style="border-collapse: collapse; text-align: left; width: 100%;">
-<thead>
-<tr>
-<th style="border: 1px solid #000; padding: 5px; background-color: #f2f2f2; font-weight: bold;">EXAMEN</th>
-<th style="border: 1px solid #000; padding: 5px; background-color: #f2f2f2; font-weight: bold;">RESULTADO DEL ANALISIS</th>
-</tr>
-</thead>
-<tbody>
-${izquierda.map(r => `
-<tr>
-<td style="border: 1px solid #000; padding: 5px;">${r.nombre}</td>
-<td style="border: 1px solid #000; padding: 5px; font-weight: bold; text-align: center;">${r.resultado}</td>
-</tr>
-`).join('')}
-</tbody>
-</table>
-</div>
-<div style="width: 48%;">
-<table class="results-table" style="border-collapse: collapse; text-align: left; width: 100%;">
-<thead>
-<tr>
-<th style="border: 1px solid #000; padding: 5px; background-color: #f2f2f2; font-weight: bold;">EXAMEN</th>
-<th style="border: 1px solid #000; padding: 5px; background-color: #f2f2f2; font-weight: bold;">RESULTADO DEL ANALISIS</th>
-</tr>
-</thead>
-<tbody>
-${derecha.map(r => `
-<tr>
-<td style="border: 1px solid #000; padding: 5px;">${r.nombre}</td>
-<td style="border: 1px solid #000; padding: 5px; font-weight: bold; text-align: center;">${r.resultado}</td>
-</tr>
-`).join('')}
-</tbody>
-</table>
-</div>
-</div>
-`;
-          }
         } else {
-          tablaHtml = `<p class="text-center mt-3">No se registraron resultados de toxicología.</p>`;
+          // Dos columnas
+          const mitad = Math.ceil(resultadosMostrables.length / 2);
+          const izquierda = resultadosMostrables.slice(0, mitad);
+          const derecha = resultadosMostrables.slice(mitad);
+
+          tablaHtml = `
+<div style="display: flex; justify-content: space-between; width: 90%; gap: 10pt; margin: 10pt auto;">
+  <div style="width: 48%; font-size: 9pt;">
+    <table class="results-table" style="border-collapse: collapse; text-align: left; width: 100%;">
+      <thead>
+        <tr>
+          <th style="border: 1px solid #000; padding: 3pt; background-color: #f2f2f2; font-weight: bold; width: 60%;">EXAMEN</th>
+          <th style="border: 1px solid #000; padding: 3pt; background-color: #f2f2f2; font-weight: bold; width: 40%;">RESULTADO</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${izquierda.map(r => `
+        <tr>
+          <td style="border: 1px solid #000; padding: 3pt;">${r.nombre}</td>
+          <td style="border: 1px solid #000; padding: 3pt; font-weight: bold; text-align: center;">${r.resultado}</td>
+        </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  </div>
+  <div style="width: 48%; font-size: 9pt;">
+    <table class="results-table" style="border-collapse: collapse; text-align: left; width: 100%;">
+      <thead>
+        <tr>
+          <th style="border: 1px solid #000; padding: 3pt; background-color: #f2f2f2; font-weight: bold; width: 60%;">EXAMEN</th>
+          <th style="border: 1px solid #000; padding: 3pt; background-color: #f2f2f2; font-weight: bold; width: 40%;">RESULTADO</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${derecha.map(r => `
+        <tr>
+          <td style="border: 1px solid #000; padding: 3pt;">${r.nombre}</td>
+          <td style="border: 1px solid #000; padding: 3pt; font-weight: bold; text-align: center;">${r.resultado}</td>
+        </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  </div>
+</div>
+`;
         }
       } else {
-        tablaHtml = `<p class="text-center mt-3">No se registraron resultados de toxicología.</p>`;
+        tablaHtml = `<p style="text-align: center; font-size: 9pt; margin: 10pt 0;">No se registraron resultados de toxicología.</p>`;
       }
+    } else {
+      tablaHtml = `<p style="text-align: center; font-size: 9pt; margin: 10pt 0;">No se registraron resultados de toxicología.</p>`;
+    }
 
-      // 👇 Generar HTML para el PDF
-      const htmlContent = `
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<style>
-body { font-family: Arial, sans-serif; margin: 0 auto; max-width: 800px; padding: 10px; color: #000; font-size: 12px; }
-.header { text-align: center; margin-bottom: 3px; }
-.header img { width: 150px; margin-bottom: 3px; }
-.header h1 { margin: 2px 0; font-size: 12px !important; font-weight: normal; }
-.title-container { text-align: center; margin-bottom: 10px; }
-.title { font-weight: bold; font-size: 16px; text-decoration: underline; display: inline-block; }
-.report-number { text-align: right; font-weight: bold; margin-bottom: 10px; }
-.main-content { font-size: 13px; }
-.section { margin-bottom: 12px; display: grid; grid-template-columns: 200px 1fr; align-items: baseline; }
-.section-title { font-weight: bold; }
-.section-content { border-bottom: 1px dotted #000; padding: 1px 5px; }
-.full-width-section { margin-top: 15px; }
-.full-width-section .section-title { margin-bottom: 8px; font-weight: bold; }
-.full-width-section .section-content { border-bottom: none; text-align: justify; }
-.results-table { width: 40%; margin: 15px auto; border-collapse: collapse; text-align: center; }
-.results-table th, .results-table td { border: 1px solid #000; padding: 2px; }
-.signature-area { text-align: center; margin-top: 40px; }
-.signature-block { display: inline-block; text-align: center; width: 250px; }
-.signature-block p { margin: 2px 0; font-size: 9px; font-weight: bold; }
-.date-in-signature { text-align: center !important; margin: 0 0 10px 0 !important; font-size: 12px !important; }
-.custom-footer {
-position: absolute;
-bottom: 0;
-left: 0;
-width: 100%;
-box-sizing: border-box;
-background-color: white;
-font-size: 7pt;
-color: #000;
-display: flex;
-flex-direction: column;
-justify-content: flex-end;
-align-items: center;
-text-align: center;
-padding: 5px 0;
-}
-</style>
-</head>
-<body>
-<div class="header">
-<img src="/assets/img/logo_pnp.png" alt="Logo PNP">
-<h1>POLICIA NACIONAL DEL PERU</h1>
-<h1>Oficina de Criminalística</h1>
+    // 👇 Generar HTML para el PDF
+const htmlContent = `
+<div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 25px; color: #000; font-size: 12px;">
+<!-- Encabezado -->
+<div style="text-align: center; margin-bottom: 10px;">
+<img src="/assets/img/logo_pnp.png" alt="Logo PNP" style="width: 150px; height: auto; margin-bottom: 5px; display: block; margin-left: auto; margin-right: auto;">
+<h1 style="margin: 2px 0; font-size: 12px; font-weight: normal;">POLICIA NACIONAL DEL PERU</h1>
+<h1 style="margin: 2px 0; font-size: 12px; font-weight: normal;">Oficina de Criminalística</h1>
 </div>
-<div class="title-container">
-<span class="title">${tituloInforme}</span>
+<!-- Título -->
+<div style="text-align: center; margin-bottom: 15px;">
+<span style="font-weight: bold; font-size: 16px; text-decoration: underline; display: inline-block;">INFORME PERICIAL DE TOXICOLOGIA</span>
 </div>
-<div class="report-number">
+<!-- Número de informe -->
+<div style="text-align: right; font-weight: bold; margin-bottom: 15px;">
 Nº ${doc.nro_registro || 'S/N'}/${anioHoy}
 </div>
-<div class="main-content">
-<div class="section">
-<span class="section-title">A. PROCEDENCIA</span>
-<span class="section-content">: ${doc.procedencia || ''}</span>
+<!-- Secciones A-H -->
+<div style="font-size: 13px;">
+<div style="margin-bottom: 15px; display: grid; grid-template-columns: 200px 1fr; align-items: baseline;">
+<span style="font-weight: bold;">A. PROCEDENCIA</span>
+<span style="border-bottom: 1px dotted #000; padding: 5px 5px 5px 10px; text-align: left;">: ${doc.procedencia || ''}</span>
 </div>
-<div class="section">
-<span class="section-title">B. ANTECEDENTE</span>
-<span class="section-content">: OFICIO. Nº ${doc.nroOficio || 'S/N'} - ${anioHoy} - ${doc.nombreOficio || ''} DEL ${fechaIncidente}</span>
+<div style="margin-bottom: 15px; display: grid; grid-template-columns: 200px 1fr; align-items: baseline;">
+<span style="font-weight: bold;">B. ANTECEDENTE</span>
+<span style="border-bottom: 1px dotted #000; padding: 5px 5px 5px 10px; text-align: left;">: OFICIO. Nº ${doc.nroOficio || 'S/N'} - ${anioHoy} - ${doc.nombreOficio || ''} DEL ${fechaIncidente}</span>
 </div>
-<div class="section">
-<span class="section-title">C. DATOS DEL PERITO</span>
-<span class="section-content">: CAP. (S) PNP Javier Alexander HUAMANI CORDOVA, identificada con CIP Nº.419397 Químico Farmacéutico CQFP 20289, con domicilio procesal en la calle Alcides Vigo N°133 Wanchaq - Cusco</span>
+<div style="margin-bottom: 15px; display: grid; grid-template-columns: 200px 1fr; align-items: baseline;">
+<span style="font-weight: bold;">C. DATOS DEL PERITO</span>
+<span style="border-bottom: 1px dotted #000; padding: 5px 5px 5px 10px; text-align: left;">: CAP. (S) PNP Javier Alexander HUAMANI CORDOVA, identificada con CIP Nº.419397 Químico Farmacéutico CQFP 20289, con domicilio procesal en la calle Alcides Vigo N°133 Wanchaq - Cusco</span>
 </div>
-<div class="section">
-<span class="section-title">D. HORA DEL INCIDENTE</span>
-<span class="section-content">: ${doc.horaIncidente || ''} &nbsp;&nbsp; <b>FECHA:</b> ${fechaIncidente}</span>
+<div style="margin-bottom: 15px; display: grid; grid-template-columns: 200px 1fr; align-items: baseline;">
+<span style="font-weight: bold;">D. HORA DEL INCIDENTE</span>
+<span style="border-bottom: 1px dotted #000; padding: 5px 5px 5px 10px; text-align: left;">: ${doc.horaIncidente || ''} &nbsp;&nbsp; <b>FECHA:</b> ${fechaIncidente}</span>
 </div>
-<div class="section">
-<span class="section-title">E. HORA DE TOMA DE MUESTRA</span>
-<span class="section-content">: ${doc.horaTomaMuestra || ''} &nbsp;&nbsp; <b>FECHA:</b> ${fechaTomaMuestra} (${nombreUsuarioActual})</span>
+<div style="margin-bottom: 15px; display: grid; grid-template-columns: 200px 1fr; align-items: baseline;">
+<span style="font-weight: bold;">E. HORA DE TOMA DE MUESTRA</span>
+<span style="border-bottom: 1px dotted #000; padding: 5px 5px 5px 10px; text-align: left;">: ${doc.horaTomaMuestra || ''} &nbsp;&nbsp; <b>FECHA:</b> ${fechaTomaMuestra} (${nombreUsuarioActual})</span>
 </div>
-<div class="section">
-<span class="section-title">F. TIPO DE MUESTRA</span>
-<span class="section-content">: ${doc.tipoMuestra || ''}</span>
+<div style="margin-bottom: 15px; display: grid; grid-template-columns: 200px 1fr; align-items: baseline;">
+<span style="font-weight: bold;">F. TIPO DE MUESTRA</span>
+<span style="border-bottom: 1px dotted #000; padding: 5px 5px 5px 10px; text-align: left;">: ${doc.tipoMuestra || ''}</span>
 </div>
-<div class="section">
-<span class="section-title">G. PERSONA QUE CONDUCE</span>
-<span class="section-content">: ${doc.personaQueConduce || ''}</span>
+<div style="margin-bottom: 15px; display: grid; grid-template-columns: 200px 1fr; align-items: baseline;">
+<span style="font-weight: bold;">G. PERSONA QUE CONDUCE</span>
+<span style="border-bottom: 1px dotted #000; padding: 5px 5px 5px 10px; text-align: left;">: ${doc.personaQueConduce || ''}</span>
 </div>
-<div class="section">
-<span class="section-title">H. EXAMINADO</span>
-<span class="section-content">: ${doc.nombres || ''} ${doc.apellidos || ''} (${doc.edad || ''}), DNI Nº:${doc.dni || ''}</span>
-</div>
-<div class="section">
-<span class="section-title">I. MOTIVACIÓN DEL EXAMEN</span>
-<span class="section-content">:D/CL/V/S. (PAF).</span>
-</div>
-<div class="full-width-section">
-<div class="section-title">J.	EXAMEN TOXICOLOGICO Y CRITERIOS CIENTIFICOS</div>
-<div class="section-content">
-Se procedió a efectuar el examen toxicológico empleando el método de cromatografía de capa fina obteniéndose como resultado:
+<div style="margin-bottom: 15px; display: grid; grid-template-columns: 200px 1fr; align-items: baseline;">
+<span style="font-weight: bold;">H. EXAMINADO</span>
+<span style="border-bottom: 1px dotted #000; padding: 5px 5px 5px 10px; text-align: left;">: ${doc.nombres || ''} ${doc.apellidos || ''} (${doc.edad || ''}), DNI Nº:${doc.dni || ''}</span>
 </div>
 </div>
+<!-- I. MOTIVACIÓN DEL EXAMEN -->
+<div style="margin-top: 20px; font-size: 13px;">
+<div style="margin-bottom: 10px; font-weight: bold;">I. MOTIVACIÓN DEL EXAMEN</div>
+<div style="text-align: justify; padding-left: 10px;">
+Motivo del examen djo. Se procedió a efectuar el examen, con el siguiente resultado:
+</div>
+</div>
+<!-- TABLA DINÁMICA -->
+<div style="margin: 20px auto; width: 40%; border-collapse: collapse; text-align: center; font-size: 12px;">
 ${tablaHtml}
-<div class="full-width-section" style="margin-top:-10px">
-<div class="section-title">J. CONCLUSIONES</div>
-<div class="section-content">
-En la muestra M-1 (${doc.tipoMuestra || ''}) analizada dio resultado:
-${this.generarTextoConclusiones(asignacion.resultados, doc.tipoMuestra)}
+</div>
+<!-- J. CONCLUSIONES -->
+<div style="margin-top: 20px; font-size: 13px;">
+<div style="margin-bottom: 10px; font-weight: bold;">J. CONCLUSIONES</div>
+<div style="text-align: justify; padding-left: 10px;">
+En la muestra M-1 (${doc.tipoMuestra || ''}) analizada se obtuvo un resultado <strong>POSITIVO</strong> para examen cualitativo
+y de alcoholemia<strong></strong> en análisis cuantitativo. La muestra procesada queda en laboratorio en calidad de
+custodia durante el tiempo establecido por ley (Directiva N° 18-03-27)
 </div>
 </div>
-<div class="full-width-section">
-<div class="section-title">K. ANEXOS</div>
+<!-- K. ANEXOS -->
+<div style="margin-top: 20px; font-size: 13px;">
+<div style="margin-bottom: 10px; font-weight: bold;">K. ANEXOS</div>
 <div style="display: flex; justify-content: space-between; margin-top: 15px;">
-<div style="width: 48%;">
-<div style="text-align: left; font-size: 12px;">
+<div style="width: 48%; text-align: left; font-size: 12px; padding-left: 10px;">
 ${anexosHtml}
 </div>
-</div>
-<div style="width: 48%; text-align: center;margin-top:-35px">
-<p style="margin-bottom: 50px; font-size: 12px;">
-Cusco, ${diaHoy} de ${mesHoy} del ${anioHoy}.
-</p>
-<img src="${rutaFirma}" alt="Firma del perito" style="width: 200px; height: auto; border: none;">
+<div style="width: 48%; text-align: center; margin-top: -35px;">
+<p style="margin-bottom: 80px; font-size: 12px;">Cusco, ${diaHoy} de ${mesHoy} del ${anioHoy}.</p>
+<img src="${rutaFirma}" alt="Firma del perito" style="width: 200px; height: auto; border: none; display: block; margin-left: auto; margin-right: auto;">
 </div>
 </div>
 </div>
-<div class="custom-footer">
+<!-- ✅ PIE DE PÁGINA (modificado) -->
+<div style="position: absolute; bottom: 0; left: 0; width: 100%; box-sizing: border-box; background-color: white; font-size: 7pt; color: #000; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; text-align: center; padding: 10px 0;">
 Calle Alcides Vigo Hurtado N°-133, distrito de Wánchaq – Cusco. Cel. N°980 121873.<br>
 Email: oficricuscomail.com
 </div>
 </div>
-</body>
-</html>
 `;
 
-      // 👇 Convertir HTML a PDF usando html2canvas y jsPDF
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = htmlContent;
-      tempDiv.style.width = '800px';
-      tempDiv.style.padding = '20px';
-      tempDiv.style.fontFamily = 'Arial, sans-serif';
-      tempDiv.style.fontSize = '12px';
-      tempDiv.style.color = '#000';
-      tempDiv.style.position = 'absolute';
-      tempDiv.style.left = '-9999px';
-      document.body.appendChild(tempDiv);
+    // 👇 Convertir HTML a PDF usando html2canvas y jsPDF
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = htmlContent;
+    tempDiv.style.width = '800px';
+    tempDiv.style.padding = '10px';
+    tempDiv.style.fontFamily = 'Arial, sans-serif';
+    tempDiv.style.fontSize = '10px';
+    tempDiv.style.color = '#000';
+    tempDiv.style.position = 'absolute';
+    tempDiv.style.left = '-9999px';
+    document.body.appendChild(tempDiv);
 
-      const canvas = await html2canvas(tempDiv);
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const width = pdf.internal.pageSize.getWidth();
-      const height = (canvas.height * width) / canvas.width;
-      pdf.addImage(imgData, 'PNG', 0, 0, width, height);
-      const pdfBlob = pdf.output('blob');
-      this.currentPdfUrl = URL.createObjectURL(pdfBlob);
+    const canvas = await html2canvas(tempDiv);
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const width = pdf.internal.pageSize.getWidth();
+    const height = (canvas.height * width) / canvas.width;
+    pdf.addImage(imgData, 'PNG', 0, 0, width, height);
+    const pdfBlob = pdf.output('blob');
+    this.currentPdfUrl = URL.createObjectURL(pdfBlob);
 
-      // 👇 Establecer el título dinámico del modal
-      this.pdfModalTitle = `OFICIO. Nº ${doc.nroOficio || 'S/N'} - ${anioHoy} - ${doc.nombreOficio || ''} DEL ${fechaIncidente}`;
+    // 👇 Establecer el título dinámico del modal
+    this.pdfModalTitle = `OFICIO. Nº ${doc.nroOficio || 'S/N'} - ${anioHoy} - ${doc.nombreOficio || ''} DEL ${fechaIncidente}`;
 
-      if (this.modalInstance) {
-        this.modalInstance.show();
-      }
-
-      document.body.removeChild(tempDiv);
-
-    } catch (err) {
-      console.error('Error al generar PDF:', err);
-      Swal.fire('❌ Error', 'No se pudo generar el PDF.', 'error');
+    if (this.modalInstance) {
+      this.modalInstance.show();
     }
+
+    document.body.removeChild(tempDiv);
+
+  } catch (err) {
+    console.error('Error al generar PDF:', err);
+    Swal.fire('❌ Error', 'No se pudo generar el PDF.', 'error');
   }
+}
 
   private generarTextoConclusiones(resultados: ToxicologiaResultado, tipoMuestra: string): string {
     if (!resultados) return 'No se registraron resultados.';

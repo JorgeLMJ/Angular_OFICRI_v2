@@ -136,7 +136,10 @@ export class OficioDosajeComponent implements OnInit, AfterViewInit, OnDestroy {
     return pages;
   }
 
-
+  // ✅ MÉTODO FALTANTE: trackBy para la paginación
+  trackByPage(_: number, page: number): number {
+    return page;
+  }
 
   async vistaPrevia(oficio: OficioDosaje): Promise<void> {
     try {

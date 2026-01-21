@@ -180,210 +180,207 @@ export class DocumentoComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // ✅ Método actualizado: genera PDF con tabla y valores correctos
-  async vistaPrevia(doc: Documento): Promise<void> {
-    try {
-      // === LÓGICA DEL SEGUNDO CÓDIGO ===
-      const currentUser = this.authService.getCurrentUser();
-      const userRole = currentUser?.rol || '';
-      const nombreUsuarioActual = currentUser?.nombre || 'Usuario del Sistema';
+async vistaPrevia(doc: Documento): Promise<void> {
+  try {
+    // === LÓGICA DEL SEGUNDO CÓDIGO ===
+    const currentUser = this.authService.getCurrentUser();
+    const userRole = currentUser?.rol || '';
+    const nombreUsuarioActual = currentUser?.nombre || 'Usuario del Sistema';
 
-      let tituloInforme = doc.nombreDocumento || 'INFORME PERICIAL';
-      let rutaFirma = '/assets/img/firma_informe_dosaje.png';
+    let tituloInforme = doc.nombreDocumento || 'INFORME PERICIAL';
+    let rutaFirma = '/assets/img/firma_informe_dosaje.png';
 
-      if (!doc.nombreDocumento) {
-        if (userRole === 'Auxiliar de Dosaje') {
-          tituloInforme = 'INFORME PERICIAL DE DOSAJE ETÍLICO';
-          rutaFirma = '/assets/img/firma_informe_dosaje.png';
-        } else if (userRole === 'Auxiliar de Toxicologia') {
-          tituloInforme = 'INFORME PERICIAL TOXICOLÓGICO';
-          rutaFirma = '/assets/img/firma_informe_toxicologico.png';
-        }
-      } else {
-        if (doc.nombreDocumento.includes('DOSAJE')) {
-          rutaFirma = '/assets/img/firma_informe_dosaje.png';
-        } else if (doc.nombreDocumento.includes('TOXICOLÓGICO') || doc.nombreDocumento.includes('TOXICOLOGIA')) {
-          rutaFirma = '/assets/img/firma_informe_toxicologico.png';
-        }
+    if (!doc.nombreDocumento) {
+      if (userRole === 'Auxiliar de Dosaje') {
+        tituloInforme = 'INFORME PERICIAL DE DOSAJE ETÍLICO';
+        rutaFirma = '/assets/img/firma_informe_dosaje.png';
+      } else if (userRole === 'Auxiliar de Toxicologia') {
+        tituloInforme = 'INFORME PERICIAL TOXICOLÓGICO';
+        rutaFirma = '/assets/img/firma_informe_toxicologico.png';
       }
-
-      const valorCualitativo = doc.cualitativo || '';
-      let valorCuantitativo = '0.0 g/l';
-      let valorCuantitativoTexto = '0.0 g/l (Cero gramos con cero cero cg x l. de sangre)';
-      
-      if (userRole === 'Auxiliar de Toxicologia') {
-        valorCuantitativo = valorCualitativo;
-        valorCuantitativoTexto = valorCualitativo;
+    } else {
+      if (doc.nombreDocumento.includes('DOSAJE')) {
+        rutaFirma = '/assets/img/firma_informe_dosaje.png';
+      } else if (doc.nombreDocumento.includes('TOXICOLÓGICO') || doc.nombreDocumento.includes('TOXICOLOGIA')) {
+        rutaFirma = '/assets/img/firma_informe_toxicologico.png';
       }
+    }
 
-      const formatFechaInforme = (fecha: string): string => {
-        if (!fecha) return '____________';
-        const d = new Date(`${fecha}T00:00:00`);
-        if (isNaN(d.getTime())) return 'FECHA INVALIDA';
-        const dia = d.getDate().toString().padStart(2, '0');
-        const mes = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SET','OCT','NOV','DIC'][d.getMonth()];
-        const anio = d.getFullYear();
-        return `${dia}${mes}${anio}`;
-      };
+    const valorCualitativo = doc.cualitativo || '';
+    let valorCuantitativo = '0.0 g/l';
+    let valorCuantitativoTexto = '0.0 g/l (Cero gramos con cero cero cg x l. de sangre)';
+    
+    if (userRole === 'Auxiliar de Toxicologia') {
+      valorCuantitativo = valorCualitativo;
+      valorCuantitativoTexto = valorCualitativo;
+    }
 
-      const fechaIncidente = formatFechaInforme(doc.fechaIncidente);
-      const fechaTomaMuestra = formatFechaInforme(doc.fechaActa || doc.fechaIncidente);
-      const hoy = new Date();
-      const diaHoy = hoy.getDate();
-      const mesHoy = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','setiembre','octubre','noviembre','diciembre'][hoy.getMonth()];
-      const anioHoy = hoy.getFullYear();
+    const formatFechaInforme = (fecha: string): string => {
+      if (!fecha) return '____________';
+      const d = new Date(`${fecha}T00:00:00`);
+      if (isNaN(d.getTime())) return 'FECHA INVALIDA';
+      const dia = d.getDate().toString().padStart(2, '0');
+      const mes = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SET','OCT','NOV','DIC'][d.getMonth()];
+      const anio = d.getFullYear();
+      return `${dia}${mes}${anio}`;
+    };
 
-      const listaAnexos = this.getAnexosSeleccionados(doc.anexos);
-      const anexosHtml = listaAnexos.length > 0
-        ? listaAnexos.map(nombre => `<p style="margin: 2px 0;">- ${nombre}</p>`).join('')
-        : '<p>No se especificaron anexos.</p>';
+    const fechaIncidente = formatFechaInforme(doc.fechaIncidente);
+    const fechaTomaMuestra = formatFechaInforme(doc.fechaActa || doc.fechaIncidente);
+    const hoy = new Date();
+    const diaHoy = hoy.getDate();
+    const mesHoy = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','setiembre','octubre','noviembre','diciembre'][hoy.getMonth()];
+    const anioHoy = hoy.getFullYear();
 
-      // === FIN LÓGICA DEL SEGUNDO CÓDIGO ===
+    const listaAnexos = this.getAnexosSeleccionados(doc.anexos);
+    const anexosHtml = listaAnexos.length > 0
+      ? listaAnexos.map(nombre => `<p style="margin: 8px 0; padding-left: 10px;">- ${nombre}</p>`).join('')
+      : '<p style="margin: 8px 0; padding-left: 10px;">No se especificaron anexos.</p>';
 
-      // Convertir firma a base64
-      const firmaBase64 = await this.imageUrlToBase64(rutaFirma);
-      const logoBase64 = await this.imageUrlToBase64('/assets/img/logo_pnp.png');
+    // Convertir firma a base64
+    const firmaBase64 = await this.imageUrlToBase64(rutaFirma);
+    const logoBase64 = await this.imageUrlToBase64('/assets/img/logo_pnp.png');
 
-      // Generar HTML con los valores correctos
-      const htmlContent = `
-  <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; color: #000; font-size: 12px;">
-    <!-- Encabezado -->
-    <div style="text-align: center; margin-bottom: 3px;">
-      <img src="${logoBase64}" alt="Logo PNP" style="width: 150px; margin-bottom: 3px;">
-      <h1 style="margin: 2px 0; font-size: 12px; font-weight: normal;">POLICIA NACIONAL DEL PERU</h1>
-      <h1 style="margin: 2px 0; font-size: 12px; font-weight: normal;">Oficina de Criminalística</h1>
+    // Generar HTML con los valores correctos y centrado
+    const htmlContent = `
+<div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 25px; color: #000; font-size: 12px;">
+  <!-- Encabezado -->
+  <div style="text-align: center; margin-bottom: 10px;">
+    <img src="${logoBase64}" alt="Logo PNP" style="width: 150px; height: auto; margin-bottom: 5px; display: block; margin-left: auto; margin-right: auto;">
+    <h1 style="margin: 2px 0; font-size: 12px; font-weight: normal;">POLICIA NACIONAL DEL PERU</h1>
+    <h1 style="margin: 2px 0; font-size: 12px; font-weight: normal;">Oficina de Criminalística</h1>
+  </div>
+
+  <!-- Título -->
+  <div style="text-align: center; margin-bottom: 15px;">
+    <span style="font-weight: bold; font-size: 16px; text-decoration: underline; display: inline-block;">${tituloInforme}</span>
+  </div>
+
+  <!-- Número de informe -->
+  <div style="text-align: right; font-weight: bold; margin-bottom: 15px;">
+    Nº ${doc.nro_registro || 'S/N'}/${anioHoy}
+  </div>
+
+  <!-- Secciones A-H -->
+  <div style="font-size: 13px;">
+    <div style="margin-bottom: 15px; display: grid; grid-template-columns: 200px 1fr; align-items: baseline;">
+      <span style="font-weight: bold;">A. PROCEDENCIA</span>
+      <span style="border-bottom: 1px dotted #000; padding: 5px 5px 5px 10px; text-align: left;">: ${doc.procedencia || ''}</span>
     </div>
-
-    <!-- Título -->
-    <div style="text-align: center; margin-bottom: 10px;">
-      <span style="font-weight: bold; font-size: 16px; text-decoration: underline; display: inline-block;">${tituloInforme}</span>
+    <div style="margin-bottom: 15px; display: grid; grid-template-columns: 200px 1fr; align-items: baseline;">
+      <span style="font-weight: bold;">B. ANTECEDENTE</span>
+      <span style="border-bottom: 1px dotted #000; padding: 5px 5px 5px 10px; text-align: left;">: OFICIO. Nº ${doc.nroOficio || 'S/N'} - ${anioHoy} - ${doc.nombreOficio || ''} DEL ${fechaIncidente}</span>
     </div>
-
-    <!-- Número de informe -->
-    <div style="text-align: right; font-weight: bold; margin-bottom: 10px;">
-      Nº ${doc.nro_registro || 'S/N'}/${anioHoy}
+    <div style="margin-bottom: 15px; display: grid; grid-template-columns: 200px 1fr; align-items: baseline;">
+      <span style="font-weight: bold;">C. DATOS DEL PERITO</span>
+      <span style="border-bottom: 1px dotted #000; padding: 5px 5px 5px 10px; text-align: left;">: CAP. (S) PNP Javier Alexander HUAMANI CORDOVA, identificada con CIP Nº.419397 Químico Farmacéutico CQFP 20289, con domicilio procesal en la calle Alcides Vigo N°133 Wanchaq - Cusco</span>
     </div>
-
-    <!-- Secciones A-H -->
-    <div style="font-size: 13px;">
-      <div style="margin-bottom: 12px; display: grid; grid-template-columns: 200px 1fr; align-items: baseline;">
-        <span style="font-weight: bold;">A. PROCEDENCIA</span>
-        <span style="border-bottom: 1px dotted #000; padding: 1px 5px;">: ${doc.procedencia || ''}</span>
-      </div>
-      <div style="margin-bottom: 12px; display: grid; grid-template-columns: 200px 1fr; align-items: baseline;">
-        <span style="font-weight: bold;">B. ANTECEDENTE</span>
-        <span style="border-bottom: 1px dotted #000; padding: 1px 5px;">: OFICIO. Nº ${doc.nroOficio || 'S/N'} - ${anioHoy} - ${doc.nombreOficio || ''} DEL ${fechaIncidente}</span>
-      </div>
-      <div style="margin-bottom: 12px; display: grid; grid-template-columns: 200px 1fr; align-items: baseline;">
-        <span style="font-weight: bold;">C. DATOS DEL PERITO</span>
-        <span style="border-bottom: 1px dotted #000; padding: 1px 5px;">: CAP. (S) PNP Javier Alexander HUAMANI CORDOVA, identificada con CIP Nº.419397 Químico Farmacéutico CQFP 20289, con domicilio procesal en la calle Alcides Vigo N°133 Wanchaq - Cusco</span>
-      </div>
-      <div style="margin-bottom: 12px; display: grid; grid-template-columns: 200px 1fr; align-items: baseline;">
-        <span style="font-weight: bold;">D. HORA DEL INCIDENTE</span>
-        <span style="border-bottom: 1px dotted #000; padding: 1px 5px;">: ${doc.horaIncidente || ''} &nbsp;&nbsp; <b>FECHA:</b> ${fechaIncidente}</span>
-      </div>
-      <div style="margin-bottom: 12px; display: grid; grid-template-columns: 200px 1fr; align-items: baseline;">
-        <span style="font-weight: bold;">E. HORA DE TOMA DE MUESTRA</span>
-        <span style="border-bottom: 1px dotted #000; padding: 1px 5px;">: ${doc.horaTomaMuestra || ''} &nbsp;&nbsp; <b>FECHA:</b> ${fechaTomaMuestra} (${nombreUsuarioActual})</span>
-      </div>
-      <div style="margin-bottom: 12px; display: grid; grid-template-columns: 200px 1fr; align-items: baseline;">
-        <span style="font-weight: bold;">F. TIPO DE MUESTRA</span>
-        <span style="border-bottom: 1px dotted #000; padding: 1px 5px;">: ${doc.tipoMuestra || ''}</span>
-      </div>
-      <div style="margin-bottom: 12px; display: grid; grid-template-columns: 200px 1fr; align-items: baseline;">
-        <span style="font-weight: bold;">G. PERSONA QUE CONDUCE</span>
-        <span style="border-bottom: 1px dotted #000; padding: 1px 5px;">: ${doc.personaQueConduce || ''}</span>
-      </div>
-      <div style="margin-bottom: 12px; display: grid; grid-template-columns: 200px 1fr; align-items: baseline;">
-        <span style="font-weight: bold;">H. EXAMINADO</span>
-        <span style="border-bottom: 1px dotted #000; padding: 1px 5px;">: ${doc.nombres || ''} ${doc.apellidos || ''} (${doc.edad || ''}), DNI Nº:${doc.dni || ''}</span>
-      </div>
+    <div style="margin-bottom: 15px; display: grid; grid-template-columns: 200px 1fr; align-items: baseline;">
+      <span style="font-weight: bold;">D. HORA DEL INCIDENTE</span>
+      <span style="border-bottom: 1px dotted #000; padding: 5px 5px 5px 10px; text-align: left;">: ${doc.horaIncidente || ''} &nbsp;&nbsp; <b>FECHA:</b> ${fechaIncidente}</span>
     </div>
-
-    <!-- I. MOTIVACIÓN DEL EXAMEN -->
-    <div style="margin-top: 15px; font-size: 13px;">
-      <div style="margin-bottom: 8px; font-weight: bold;">I. MOTIVACIÓN DEL EXAMEN</div>
-      <div style="text-align: justify;">
-        Motivo del examen ${doc.delitoInfraccion || ''}. Se procedió a efectuar el examen, con el siguiente resultado:
-      </div>
+    <div style="margin-bottom: 15px; display: grid; grid-template-columns: 200px 1fr; align-items: baseline;">
+      <span style="font-weight: bold;">E. HORA DE TOMA DE MUESTRA</span>
+      <span style="border-bottom: 1px dotted #000; padding: 5px 5px 5px 10px; text-align: left;">: ${doc.horaTomaMuestra || ''} &nbsp;&nbsp; <b>FECHA:</b> ${fechaTomaMuestra} (${nombreUsuarioActual})</span>
     </div>
-
-    <!-- TABLA DINÁMICA -->
-    <table style="width: 40%; margin: 15px auto; border-collapse: collapse; text-align: center; font-size: 12px;">
-      <tr><th style="border: 1px solid #000; padding: 2px;">EXAMEN</th><th style="border: 1px solid #000; padding: 2px;">M-1</th></tr>
-      <tr><td style="border: 1px solid #000; padding: 2px;">Cualitativo</td><td style="border: 1px solid #000; padding: 2px;"><strong>${valorCualitativo}</strong></td></tr>
-      <tr><td style="border: 1px solid #000; padding: 2px;">Cuantitativo</td><td style="border: 1px solid #000; padding: 2px;"><strong>${valorCuantitativo}</strong></td></tr>
-    </table>
-
-    <!-- J. CONCLUSIONES -->
-    <div style="margin-top: 15px; font-size: 13px;">
-      <div style="margin-bottom: 8px; font-weight: bold;">J. CONCLUSIONES</div>
-      <div style="text-align: justify;">
-        En la muestra M-1 (${doc.tipoMuestra || ''}) analizada se obtuvo un resultado <strong>${valorCualitativo}</strong> para examen cualitativo
-        y de alcoholemia<strong> ${valorCuantitativoTexto}</strong> en análisis cuantitativo. La muestra procesada queda en laboratorio en calidad de 
-        custodia durante el tiempo establecido por ley (Directiva N° 18-03-27)
-      </div>
+    <div style="margin-bottom: 15px; display: grid; grid-template-columns: 200px 1fr; align-items: baseline;">
+      <span style="font-weight: bold;">F. TIPO DE MUESTRA</span>
+      <span style="border-bottom: 1px dotted #000; padding: 5px 5px 5px 10px; text-align: left;">: ${doc.tipoMuestra || ''}</span>
     </div>
-
-    <!-- K. ANEXOS -->
-    <div style="margin-top: 15px; font-size: 13px;">
-      <div style="margin-bottom: 8px; font-weight: bold;">K. ANEXOS</div>
-      <div style="display: flex; justify-content: space-between; margin-top: 15px;">
-        <div style="width: 48%; text-align: left; font-size: 12px;">
-          ${anexosHtml}
-        </div>
-        <div style="width: 48%; text-align: center; margin-top: -35px;">
-          <p style="margin-bottom: 80px; font-size: 12px;">Cusco, ${diaHoy} de ${mesHoy} del ${anioHoy}.</p>
-          <img src="${firmaBase64}" alt="Firma del perito" style="width: 200px; height: auto; border: none;">
-        </div>
-      </div>
+    <div style="margin-bottom: 15px; display: grid; grid-template-columns: 200px 1fr; align-items: baseline;">
+      <span style="font-weight: bold;">G. PERSONA QUE CONDUCE</span>
+      <span style="border-bottom: 1px dotted #000; padding: 5px 5px 5px 10px; text-align: left;">: ${doc.personaQueConduce || ''}</span>
     </div>
-
-    <!-- ✅ PIE DE PÁGINA (modificado) -->
-    <div style="position: absolute; bottom: 0; left: 0; width: 100%; box-sizing: border-box; background-color: white; font-size: 7pt; color: #000; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; text-align: center; padding: 5px 0;">
-      Calle Alcides Vigo Hurtado N°-133, distrito de Wánchaq – Cusco. Cel. N°980 121873.<br>
-      Email: oficricuscomail.com
+    <div style="margin-bottom: 15px; display: grid; grid-template-columns: 200px 1fr; align-items: baseline;">
+      <span style="font-weight: bold;">H. EXAMINADO</span>
+      <span style="border-bottom: 1px dotted #000; padding: 5px 5px 5px 10px; text-align: left;">: ${doc.nombres || ''} ${doc.apellidos || ''} (${doc.edad || ''}), DNI Nº:${doc.dni || ''}</span>
     </div>
   </div>
+
+  <!-- I. MOTIVACIÓN DEL EXAMEN -->
+  <div style="margin-top: 20px; font-size: 13px;">
+    <div style="margin-bottom: 10px; font-weight: bold;">I. MOTIVACIÓN DEL EXAMEN</div>
+    <div style="text-align: justify; padding-left: 10px;">
+      Motivo del examen ${doc.delitoInfraccion || ''}. Se procedió a efectuar el examen, con el siguiente resultado:
+    </div>
+  </div>
+
+  <!-- TABLA DINÁMICA -->
+  <table style="width: 40%; margin: 20px auto; border-collapse: collapse; text-align: center; font-size: 12px;">
+    <tr><th style="border: 1px solid #000; padding: 5px;">EXAMEN</th><th style="border: 1px solid #000; padding: 5px;">M-1</th></tr>
+    <tr><td style="border: 1px solid #000; padding: 5px;">Cualitativo</td><td style="border: 1px solid #000; padding: 5px;"><strong>${valorCualitativo}</strong></td></tr>
+    <tr><td style="border: 1px solid #000; padding: 5px;">Cuantitativo</td><td style="border: 1px solid #000; padding: 5px;"><strong>${valorCuantitativo}</strong></td></tr>
+  </table>
+
+  <!-- J. CONCLUSIONES -->
+  <div style="margin-top: 20px; font-size: 13px;">
+    <div style="margin-bottom: 10px; font-weight: bold;">J. CONCLUSIONES</div>
+    <div style="text-align: justify; padding-left: 10px;">
+      En la muestra M-1 (${doc.tipoMuestra || ''}) analizada se obtuvo un resultado <strong>${valorCualitativo}</strong> para examen cualitativo
+      y de alcoholemia<strong> ${valorCuantitativoTexto}</strong> en análisis cuantitativo. La muestra procesada queda en laboratorio en calidad de 
+      custodia durante el tiempo establecido por ley (Directiva N° 18-03-27)
+    </div>
+  </div>
+
+  <!-- K. ANEXOS -->
+  <div style="margin-top: 20px; font-size: 13px;">
+    <div style="margin-bottom: 10px; font-weight: bold;">K. ANEXOS</div>
+    <div style="display: flex; justify-content: space-between; margin-top: 15px;">
+      <div style="width: 48%; text-align: left; font-size: 12px; padding-left: 10px;">
+        ${anexosHtml}
+      </div>
+      <div style="width: 48%; text-align: center; margin-top: -35px;">
+        <p style="margin-bottom: 80px; font-size: 12px;">Cusco, ${diaHoy} de ${mesHoy} del ${anioHoy}.</p>
+        <img src="${firmaBase64}" alt="Firma del perito" style="width: 200px; height: auto; border: none; display: block; margin-left: auto; margin-right: auto;">
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ PIE DE PÁGINA (modificado) -->
+  <div style="position: absolute; bottom: 0; left: 0; width: 100%; box-sizing: border-box; background-color: white; font-size: 7pt; color: #000; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; text-align: center; padding: 10px 0;">
+    Calle Alcides Vigo Hurtado N°-133, distrito de Wánchaq – Cusco. Cel. N°980 121873.<br>
+    Email: oficricuscomail.com
+  </div>
+</div>
 `;
 
-      // 👇 👇 👇 LÍNEA AGREGADA: Define el título del modal usando el antecedente 👇 👇 👇
-      this.pdfModalTitle = `OFICIO. Nº ${doc.nroOficio || 'S/N'} - ${anioHoy} - ${doc.nombreOficio || ''} DEL ${fechaIncidente}`;
+    // 👇 👇 👇 LÍNEA AGREGADA: Define el título del modal usando el antecedente 👇 👇 👇
+    this.pdfModalTitle = `OFICIO. Nº ${doc.nroOficio || 'S/N'} - ${anioHoy} - ${doc.nombreOficio || ''} DEL ${fechaIncidente}`;
 
-      // Crear contenedor temporal
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = htmlContent;
-      tempDiv.style.width = '800px';
-      tempDiv.style.padding = '20px';
-      tempDiv.style.fontFamily = 'Arial, sans-serif';
-      tempDiv.style.fontSize = '12px';
-      tempDiv.style.color = '#000';
-      tempDiv.style.position = 'absolute';
-      tempDiv.style.left = '-9999px';
-      document.body.appendChild(tempDiv);
+    // Crear contenedor temporal
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = htmlContent;
+    tempDiv.style.width = '800px';
+    tempDiv.style.padding = '25px';
+    tempDiv.style.fontFamily = 'Arial, sans-serif';
+    tempDiv.style.fontSize = '12px';
+    tempDiv.style.color = '#000';
+    tempDiv.style.position = 'absolute';
+    tempDiv.style.left = '-9999px';
+    document.body.appendChild(tempDiv);
 
-      // Generar PDF
-      const canvas = await html2canvas(tempDiv);
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const width = pdf.internal.pageSize.getWidth();
-      const height = (canvas.height * width) / canvas.width;
+    // Generar PDF
+    const canvas = await html2canvas(tempDiv);
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const width = pdf.internal.pageSize.getWidth();
+    const height = (canvas.height * width) / canvas.width;
 
-      pdf.addImage(imgData, 'PNG', 0, 0, width, height);
-      const pdfBlob = pdf.output('blob');
-      this.currentPdfUrl = URL.createObjectURL(pdfBlob);
+    pdf.addImage(imgData, 'PNG', 0, 0, width, height);
+    const pdfBlob = pdf.output('blob');
+    this.currentPdfUrl = URL.createObjectURL(pdfBlob);
 
-      if (this.modalInstance) {
-        this.modalInstance.show();
-      }
-
-      document.body.removeChild(tempDiv);
-      
-    } catch (err) {
-      console.error('Error al generar PDF:', err);
-      Swal.fire('Error', 'No se pudo generar el PDF.', 'error');
+    if (this.modalInstance) {
+      this.modalInstance.show();
     }
-  }
 
+    document.body.removeChild(tempDiv);
+    
+  } catch (err) {
+    console.error('Error al generar PDF:', err);
+    Swal.fire('Error', 'No se pudo generar el PDF.', 'error');
+  }
+}
   // ✅ Función para convertir imagen a base64
   private async imageUrlToBase64(url: string): Promise<string> {
     const response = await fetch(url);

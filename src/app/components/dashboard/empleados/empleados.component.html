@@ -1,4 +1,3 @@
-<!-- En la tabla, agrega una nueva columna para Estado -->
 <div class="container mt-4">
   <!-- Encabezado -->
   <div class="d-flex justify-content-between align-items-center mb-3">
@@ -19,8 +18,60 @@
            (input)="goToPage(1)">
   </div>
 
-  <!-- 📋 Tabla de empleados -->
-  <div class="table-responsive shadow-sm rounded">
+  <!-- 📋 Grid de Cards (móvil) -->
+  <div class="row g-3 d-block d-md-none">
+    <div class="col-12" *ngFor="let emp of paginatedEmpleados; trackBy: trackById">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-light d-flex justify-content-between align-items-start">
+          <div>
+            <h5 class="mb-1 text-primary">ID: {{ emp.id }}</h5>
+            <p class="mb-1 text-muted small">
+              <i class="bi bi-person me-1"></i> {{ emp.nombre }} {{ emp.apellido }}
+            </p>
+            <p class="mb-0">
+              <strong>Cargo:</strong> {{ emp.cargo }}
+            </p>
+          </div>
+          <div class="btn-group flex-shrink-0" role="group">
+            <button type="button" class="btn btn-sm btn-outline-warning" (click)="editarEmpleado(emp.id!)"><i class="bi bi-pencil-square"></i></button>
+            <button type="button" class="btn btn-sm btn-outline-danger" (click)="confirmDelete(emp)"><i class="bi bi-trash"></i></button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <h6 class="text-secondary mb-2">DNI</h6>
+            <p class="mb-0">{{ emp.dni }}</p>
+          </div>
+          <div class="mb-3">
+            <h6 class="text-secondary mb-2">Teléfono</h6>
+            <p class="mb-0">{{ emp.telefono }}</p>
+          </div>
+          <div class="mb-3">
+            <h6 class="text-secondary mb-2">Estado</h6>
+            <div class="form-check form-switch">
+              <input 
+                class="form-check-input" 
+                type="checkbox" 
+                [checked]="emp.estado === 'Activo'" 
+                (change)="toggleEstado(emp, $event)">
+              <label class="form-check-label">
+                {{ emp.estado === 'Activo' ? 'Activo' : 'Inactivo' }}
+              </label>
+            </div>
+          </div>
+          <div class="mb-3">
+            <h6 class="text-secondary mb-2">Usuario</h6>
+            <span class="badge bg-info">
+              <i class="bi bi-person-circle me-1"></i> {{ emp.usuarioId }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 📊 Tabla (desktop) -->
+  <div class="table-responsive shadow-sm rounded d-none d-md-block">
     <table class="table table-hover align-middle">
       <thead class="table-primary">
         <tr>
@@ -30,7 +81,7 @@
           <th>DNI</th>
           <th>Cargo</th>
           <th>Teléfono</th>
-          <th>Estado</th> <!-- ✅ Nueva columna -->
+          <th>Estado</th>
           <th>Usuario</th>
           <th>Acciones</th>
         </tr>
@@ -43,8 +94,6 @@
           <td>{{ emp.dni }}</td>
           <td>{{ emp.cargo }}</td>
           <td>{{ emp.telefono }}</td>
-         <!-- Columna Estado -->
-          <!-- En la columna Estado -->
           <td>
             <div class="form-check form-switch">
               <input 
@@ -78,14 +127,20 @@
     </table>
   </div>
 
-  <!-- 📄 Paginación -->
-  <div class="d-flex justify-content-between align-items-center mt-3">
-    <button class="btn btn-outline-primary btn-sm" (click)="prevPage()" [disabled]="currentPage === 1">
-      ⬅ Anterior
-    </button>
-    <span>Página {{ currentPage }} de {{ totalPages }}</span>
-    <button class="btn btn-outline-primary btn-sm" (click)="nextPage()" [disabled]="currentPage === totalPages">
-      Siguiente ➡
-    </button>
+  <!-- 📄 Paginación (estilo como en la imagen) -->
+  <div class="d-flex justify-content-center mt-4">
+    <nav>
+      <ul class="pagination">
+        <li class="page-item" [class.disabled]="currentPage === 1">
+          <button class="page-link" (click)="prevPage()">Anterior</button>
+        </li>
+        <li class="page-item" *ngFor="let page of getPageNumbers(); trackBy: trackByPage" [class.active]="page === currentPage">
+          <button class="page-link" (click)="goToPage(page)">{{ page }}</button>
+        </li>
+        <li class="page-item" [class.disabled]="currentPage === totalPages">
+          <button class="page-link" (click)="nextPage()">Siguiente</button>
+        </li>
+      </ul>
+    </nav>
   </div>
 </div>
